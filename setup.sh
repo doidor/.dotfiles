@@ -23,6 +23,7 @@ wget https://go.microsoft.com/fwlink/?LinkID=760868 -O $DEBS_FOLDER/visualstudio
 wget https://downloads.slack-edge.com/linux_releases/slack-desktop-3.3.3-amd64.deb -O $DEBS_FOLDER/slack.deb
 wget https://repo.skype.com/latest/skypeforlinux-64.deb -O $DEBS_FOLDER/skype.deb
 wget https://mega.nz/linux/MEGAsync/xUbuntu_19.10/amd64/megasync-xUbuntu_19.10_amd64.deb -O $DEBS_FOLDER/megasync.deb
+wget https://github.com/keeweb/keeweb/releases/download/v1.12.3/KeeWeb-1.12.3.linux.x64.deb -O $DEBS_FOLDER/keeweb.deb
 
 dpkg -i $DEBS_FOLDER/*.deb
 

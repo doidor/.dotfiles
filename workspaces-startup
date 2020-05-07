@@ -1,0 +1,16 @@
+#!/bin/bash
+
+i3-msg 'workspace 1:web; exec /usr/bin/google-chrome --profile-directory=Default' -q
+sleep 1
+i3-msg 'workspace 2:code; exec /usr/bin/code' -q
+sleep 2
+i3-msg 'workspace 3:work-web; exec /usr/bin/google-chrome --profile-directory=Profile\ 1' -q
+sleep 1
+i3-msg 'workspace 8:terminals; exec /usr/bin/terminator' -q
+sleep 0.5
+i3-msg 'workspace 8:terminals; exec /usr/bin/terminator' -q
+sleep 1
+i3-msg 'workspace 9:work-chat; exec /usr/bin/slack' -q
+sleep 1
+i3-msg 'workspace 9:work-chat; exec /usr/bin/skypeforlinux' -q
+sleep 1

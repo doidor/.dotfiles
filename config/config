@@ -534,9 +534,9 @@ exec --no-startup-id $i3-wm.program.2
 set_from_resource $i3-wm.program.3 i3-wm.program.3 :
 exec --no-startup-id $i3-wm.program.3
 
-workspace "1:web" output DisplayPort-0
-workspace "2:code" output DisplayPort-0
-workspace "3:work-web" output DisplayPort-0
+workspace "1:web" output DP-4
+workspace "2:code" output DP-4
+workspace "3:work-web" output DP-4
 workspace "8:terminals" output HDMI-0
 workspace "9:work-chat" output HDMI-0
 workspace "10:web-inspector" output HDMI-0

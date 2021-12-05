@@ -1,11 +1,6 @@
 ## dotfiles setup
 
-This project sets up a [regolith](https://regolith-linux.org/) distro with basic programming software.
+This project contains multiple setup files for both Windows and Linux / MacOS. This contains my configuration files for [Alacritty](https://github.com/alacritty/alacritty), [tmux](https://github.com/tmux/tmux), [zsh](https://ohmyz.sh/) and [neovim](https://neovim.io/).
 
-To install the packages, just run:
+This also contains my config for the [regolith](https://regolith-linux.org/) distro with some basic tools for development.
 
-```bash
-$ sudo setup.sh
-```
-
-Then follow the instructions provided by the script.

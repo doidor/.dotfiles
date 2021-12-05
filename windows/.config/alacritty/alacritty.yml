@@ -33,7 +33,7 @@ window:
   # fall back to the window manager's recommended size.
   dimensions:
     columns: 150
-    lines: 50
+    lines: 40
 
   # Window position (changes require restart)
   #
@@ -63,7 +63,7 @@ window:
   # Values for `decorations` (macOS only):
   #     - transparent: Title bar, transparent background and title bar buttons
   #     - buttonless: Title bar, transparent background and no title bar buttons
-  decorations: buttonless
+    decorations: none 
 
   # Background opacity
   #
@@ -157,7 +157,7 @@ font:
     #style: Bold Italic
 
   # Point size
-  size: 18.0
+    size: 18.0
 
   # Offset is the extra space around each character. `offset.y` can be thought
   # of as modifying the line spacing, and `offset.x` as modifying the letter
@@ -428,9 +428,9 @@ colors:
 #   - (Linux/BSD) user login shell
 #   - (Windows) powershell
 shell:
-  program: /usr/local/bin/tmux
+  program: "C:\\Windows\\System32\\wsl.exe"
   args:
-    - -T 256
+          - "tmux attach || tmux -2 -c /mnt/c/Users/tdrpo/"
 
 # Startup directory
 #

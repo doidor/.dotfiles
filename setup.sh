@@ -1,14 +1,13 @@
 #!/bin/bash
 
-OS_FOLDER="non-windows"
+OS_FOLDER="osx"
 
-while getopts nw flag
-do
-    case "${flag}" in
-        w) OS_FOLDER="windows";; 
-        n) OS_FOLDER="non-windows";; 
-    esac
-done
+case "$OSTYPE" in
+  solaris*|linux*|bsd*) OS_FOLDER="linux" ;;
+  darwin*) OS_FOLDER="osx" ;; 
+  msys*|cygwin*) OS_FOLDER="windows" ;;
+  *) OS_FOLDER="osx" ;;
+esac
 
 if [ ! -d ~/.config ]; then
     mkdir ~/.config/
@@ -19,7 +18,7 @@ cp -r ./common/.config/* ~/.config
 echo -e "Done."
 
 echo -e "Copying common dotfiles..."
-cp ./common/.* ~/
+rsync -avr ./common/ ~/ 
 echo -e "Done."
 
 echo -e "Copying OS specific files..."

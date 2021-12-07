@@ -18,7 +18,7 @@ cp -r ./common/.config/* ~/.config
 echo -e "Done."
 
 echo -e "Copying common dotfiles..."
-rsync -avr ./common/ ~/ 
+rsync -q ./common/ ~/ 
 echo -e "Done."
 
 echo -e "Copying OS specific files..."

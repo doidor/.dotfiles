@@ -5,5 +5,5 @@ cp -r ./.config/* ~/.config
 echo -e "Done."
 
 echo -e "Copying dotfiles..."
-rsync -avr --exclude='setup.sh' --exclude='.config' ./ ~/ 
+rsync -q --exclude='setup.sh' --exclude='.config' ./ ~/ 
 echo -e "Done."

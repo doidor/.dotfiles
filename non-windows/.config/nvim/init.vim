@@ -9,7 +9,7 @@ Plug 'scrooloose/nerdtree'
 Plug 'ryanoasis/vim-devicons'
 Plug 'neoclide/coc.nvim', {'branch':'release'}
 Plug 'sbdchd/neoformat'
-Plug 'Mofiqul/vscode.nvim'
+Plug 'tomasiser/vim-code-dark'
 let g:coc_global_extensions = ['coc-tsserver',
 \'coc-python',
 \ 'coc-pydocstring',
@@ -70,5 +70,4 @@ if (has("termguicolors"))
 set termguicolors
 endif
 syntax enable
-let g:vscode_style = "dark"
-colorscheme vscode
+colorscheme codedark 

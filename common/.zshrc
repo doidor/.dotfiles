@@ -107,3 +107,5 @@ eval "$(direnv hook zsh)"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+setupsolarized dircolors.256dark

@@ -116,3 +116,4 @@ if [ -e /Users/doidor/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/doidor/
 eval "$(direnv hook zsh)"
 alias tv='tidy-viewer'
 
+setupsolarized dircolors.256dark

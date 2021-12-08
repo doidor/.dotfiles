@@ -3,7 +3,13 @@
 OS_FOLDER="osx"
 
 case "$OSTYPE" in
-  solaris*|linux*|bsd*) OS_FOLDER="linux" ;;
+  solaris*|linux*|bsd*)
+    if grep -qi microsoft /proc/version; then
+      OS_FOLDER="windows"
+    else 
+      OS_FOLDER="linux" 
+    fi
+    ;;
   darwin*) OS_FOLDER="osx" ;; 
   msys*|cygwin*) OS_FOLDER="windows" ;;
   *) OS_FOLDER="osx" ;;

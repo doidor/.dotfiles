@@ -9,3 +9,5 @@ addf = "!git ls-files -m -o --exclude-standard | fzf --print0 -m | xargs -0 -t -
 	hide-dirty = 0
 	hide-status = 0
 	hide-dirty = 0
+[core]
+	editor = nvim

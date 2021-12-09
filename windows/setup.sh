@@ -9,5 +9,5 @@ fi
 echo -e "Done."
 
 echo -e "Copying dotfiles..."
-rsync -q --exclude='setup.sh' --exclude='.config' ./ ~/ 
+rsync -avr --exclude='setup.sh' ./ ~/ 
 echo -e "Done."

@@ -19,12 +19,8 @@ if [ ! -d ~/.config ]; then
     mkdir ~/.config/
 fi
 
-echo -e "Copying common .config files..."
-cp -r ./common/.config/* ~/.config
-echo -e "Done."
-
 echo -e "Copying common dotfiles..."
-rsync -q ./common/ ~/ 
+rsync -avr ./common/ ~/ 
 echo -e "Done."
 
 echo -e "Copying OS specific files..."

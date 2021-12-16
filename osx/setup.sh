@@ -7,7 +7,9 @@ echo -e "Done."
 # echo -e "Installing dependencies..."
 # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # brew update
-# brew install --cask visual-studio-code
+# brew install visual-studio-code
+# brew install koekeishiya/formulae/yabai 
+# brew install koekeishiya/formulae/skhd 
 # brew install tmux
 # curl -L https://nixos.org/nix/install | sh
 # nix-env -i neovim direnv 

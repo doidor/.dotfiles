@@ -5,6 +5,7 @@ OS_FOLDER="osx"
 case "$OSTYPE" in
   solaris*|linux*|bsd*)
     if grep -qi microsoft /proc/version; then
+      # Windows Subsystem for Linux
       OS_FOLDER="windows"
     else 
       OS_FOLDER="linux" 

@@ -1,4 +1,4 @@
-ctrl - e : yabai -m space --layout bsp
+ctrl - x : yabai -m space --layout bsp
 ctrl - s : yabai -m space --layout stack
 
 ctrl + shift - j: yabai -m window --focus stack.next || yabai -m window --focus south

@@ -430,7 +430,7 @@ colors:
 shell:
   program: "C:\\Windows\\System32\\wsl.exe"
   args:
-          - "tmux attach || tmux -2 -c /mnt/c/Users/tdrpo/"
+          - "tmux attach || tmux -2"
 
 # Startup directory
 #

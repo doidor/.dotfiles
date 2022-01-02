@@ -32,7 +32,7 @@ call plug#end()
 set nocompatible            " disable compatibility to old-time vi
 set showmatch               " show matching brackets.
 set ignorecase              " case insensitive matching
-set mouse=v                 " middle-click paste with mouse
+set mouse=a                 " middle-click paste with mouse
 set hlsearch                " highlight search results
 set tabstop=2               " number of columns occupied by a tab character
 set softtabstop=2           " see multiple spaces as tabstops so <BS> does the right thing

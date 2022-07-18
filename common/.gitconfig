@@ -1,5 +1,6 @@
 [alias]
-addf = "!git ls-files -m -o --exclude-standard | fzf --print0 -m | xargs -0 -t -o git add"
+  addf = "!git ls-files -m -o --exclude-standard | fzf --print0 -m | xargs -0 -t -o git add"
+  rbr = "!f() { git pull --rebase=interactive origin $1; }; f"
 [pull]
 	rebase = false
 [oh-my-zsh]

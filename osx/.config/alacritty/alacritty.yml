@@ -23,7 +23,6 @@
   # available, otherwise `xterm-256color` is used.
   #TERM: alacritty
 
-background_opacity: 0.95
 
 window:
   # Window dimensions (changes require restart)
@@ -35,6 +34,7 @@ window:
     columns: 150
     lines: 50
 
+  opacity: 0.95
   # Window position (changes require restart)
   #
   # Specified in number of pixels.
@@ -157,7 +157,7 @@ font:
     #style: Bold Italic
 
   # Point size
-  size: 18.0
+  size: 20.0
 
   # Offset is the extra space around each character. `offset.y` can be thought
   # of as modifying the line spacing, and `offset.x` as modifying the letter
@@ -428,7 +428,7 @@ colors:
 #   - (Linux/BSD) user login shell
 #   - (Windows) powershell
 shell:
-  program: /usr/local/bin/tmux
+  program: /opt/homebrew/bin/tmux
   args:
     - -T 256
 

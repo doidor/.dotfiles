@@ -71,10 +71,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="false"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 
-alias dircolors='gdircolors'
-eval $(dircolors)
-
-plugins=(git fzf zsh-dircolors-solarized)
+plugins=(git fzf)
 ZSH_DISABLE_COMPFIX=true
 source $ZSH/oh-my-zsh.sh
 
@@ -104,16 +101,4 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-
 transfer(){ if [ $# -eq 0 ];then echo "No arguments specified.\nUsage:\n transfer <file|directory>\n ... | transfer <file_name>">&2;return 1;fi;if tty -s;then file="$1";file_name=$(basename "$file");if [ ! -e "$file" ];then echo "$file: No such file or directory">&2;return 1;fi;if [ -d "$file" ];then file_name="$file_name.zip" ,;(cd "$file"&&zip -r -q - .)|curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null,;else cat "$file"|curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null;fi;else file_name=$1;curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null;fi;}
-
-if [ -e /Users/doidor/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/doidor/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
-eval "$(direnv hook zsh)"
-alias tv='tidy-viewer'
-
-setupsolarized dircolors.256dark

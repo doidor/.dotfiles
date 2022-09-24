@@ -13,3 +13,7 @@
 	hide-dirty = 0
 [core]
 	editor = nvim
+[diff]
+	tool = nvimdiff
+[difftool]
+	prompt = false

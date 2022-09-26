@@ -17,3 +17,5 @@
 	tool = nvimdiff
 [difftool]
 	prompt = false
+[rebase]
+	autoSquash = true

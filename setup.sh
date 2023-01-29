@@ -3,7 +3,7 @@
 for folder in */
 do
     echo "stow $folder"
-    # stow -D $folder
-    # stow $folder
+    stow -D $folder
+    stow $folder
 done
 

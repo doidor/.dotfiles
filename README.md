@@ -13,9 +13,9 @@ To automatically copy all config files to their destination, run the `setup` wit
 - [tmux](https://github.com/tmux/tmux)
 - [fzf](https://github.com/junegunn/fzf)
 - [riprep](https://github.com/BurntSushi/ripgrep)
-- [neovim](https://neovim.io/).
+- [neovim](https://neovim.io/)
 - [stow](https://www.gnu.org/software/stow/manual/stow.html)
-- [nix](https://nixos.org/download.html).
+- [nix](https://nixos.org/download.html)
 - [direnv](https://direnv.net/)
 
 #### MacOS specific

@@ -1,8 +1,8 @@
 ## dotfiles setup
 
-This project contains multiple setup files for Windows, Linux and MacOS. When working on Windows, I use WSL for all tools, except Alacritty.
+This project contains multiple setup files for Windows, Linux and MacOS. When working on Windows, I use WSL for all tools, except Alacritty (which I install in Windows directly).
 
-To automatically copy all config files to their destination, run the `setup` with one of the following flags (or none):
+To setup everything clone this repository into your home folder (`cd ~`), the run `./setup.sh` to [stow](https://www.gnu.org/software/stow/manual/stow.html) all folders.
 
 ### Prerequisites
 

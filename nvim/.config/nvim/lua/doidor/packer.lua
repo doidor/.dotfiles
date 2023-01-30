@@ -69,4 +69,9 @@ return require('packer').startup(function(use)
   use('prettier/vim-prettier')
 
   use("RRethy/vim-illuminate")
+
+  use {
+    'nvim-lualine/lualine.nvim',
+    requires = { 'kyazdani42/nvim-web-devicons', opt = true }
+  }
 end)

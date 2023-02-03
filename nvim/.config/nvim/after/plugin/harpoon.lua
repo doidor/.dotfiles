@@ -9,5 +9,3 @@ vim.keymap.set("n", "2h", function() ui.nav_file(2) end)
 vim.keymap.set("n", "3h", function() ui.nav_file(3) end)
 vim.keymap.set("n", "4h", function() ui.nav_file(4) end)
 vim.keymap.set("n", "5h", function() ui.nav_file(5) end)
-
-

@@ -3,19 +3,19 @@
   rbr = "!f() { git pull --rebase=interactive origin $1; }; f"
   logs = "!git log --oneline | head -n 5"
 [pull]
-	rebase = false
+  rebase = false
 [oh-my-zsh]
-	hide-status = 1
-	hide-dirty = 1
-	hide-status = 0
-	hide-dirty = 0
-	hide-status = 0
-	hide-dirty = 0
+  hide-status = 1
+  hide-dirty = 1
+  hide-status = 0
+  hide-dirty = 0
+  hide-status = 0
+  hide-dirty = 0
 [core]
-	editor = nvim
+  editor = nvim
 [diff]
-	tool = nvimdiff
+  tool = nvimdiff
 [difftool]
-	prompt = false
+  prompt = false
 [rebase]
-	autoSquash = true
+  autoSquash = true

@@ -20,17 +20,6 @@ return require('packer').startup(function(use)
 
   use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable 'make' == 1 }
 
-  -- use({
-  --   'rose-pine/neovim',
-  --   as = 'rose-pine',
-  --   config = function()
-  --     require("rose-pine").setup()
-  --     vim.cmd.colorscheme('rose-pine')
-  --   end
-  -- })
-
-  use { "catppuccin/nvim", as = "catppuccin" }
-
   use({ 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' })
   use('nvim-treesitter/playground')
   use('theprimeagen/harpoon')
@@ -77,4 +66,7 @@ return require('packer').startup(function(use)
 
   use('APZelos/blamer.nvim')
   use('airblade/vim-gitgutter')
+
+  use("EdenEast/nightfox.nvim")
+  use('editorconfig/editorconfig-vim')
 end)

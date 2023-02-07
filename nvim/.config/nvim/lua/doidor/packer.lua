@@ -55,6 +55,7 @@ return require('packer').startup(function(use)
 
     use("tpope/vim-surround")
     use("tpope/vim-commentary")
+    use("tpope/vim-vinegar")
     use('prettier/vim-prettier')
 
     use("RRethy/vim-illuminate")

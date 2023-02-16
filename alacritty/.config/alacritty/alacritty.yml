@@ -33,7 +33,7 @@ window:
     columns: 150
     lines: 50
 
-  opacity: 0.97
+  opacity: 0.99
   # Window position (changes require restart)
   #
   # Specified in number of pixels.
@@ -185,7 +185,7 @@ font:
 colors:
   # Default colors
   primary:
-    background: "#171717"
+    background: "#232323"
   #  foreground: '#c5c8c6'
 
   # Bright and dim foreground colors

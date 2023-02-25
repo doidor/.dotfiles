@@ -121,6 +121,7 @@ eval "$(direnv hook zsh)"
 # Bun
 export BUN_INSTALL="/Users/doidor/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+export EDITOR=nvim
 
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"

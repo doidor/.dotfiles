@@ -99,8 +99,12 @@ source $ZSH/oh-my-zsh.sh
 # users are encouraged to define aliases within the ZSH_CUSTOM folder.
 # For a full list of active aliases, run `alias`.
 #
+
+export EDITOR=nvim
+
 # Example aliases
-# alias zshconfig="mate ~/.zshrc"
+alias zshconfig="$EDITOR ~/.zshrc"
+alias r="ranger"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 export NVM_DIR="$HOME/.nvm"
@@ -121,7 +125,6 @@ eval "$(direnv hook zsh)"
 # Bun
 export BUN_INSTALL="/Users/doidor/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-export EDITOR=nvim
 
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"

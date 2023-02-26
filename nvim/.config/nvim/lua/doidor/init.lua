@@ -2,10 +2,11 @@ require("doidor.set")
 require("doidor.remap")
 
 local augroup = vim.api.nvim_create_augroup
-local doidorGroup = augroup('doidor', {})
-
 local autocmd = vim.api.nvim_create_autocmd
+
+local doidorGroup = augroup('doidor', {})
 local yank_group = augroup('HighlightYank', {})
+local netrw_group = augroup('netrw_mapping', {})
 
 function R(name)
   print("Reloading...")
@@ -34,6 +35,14 @@ autocmd({ "BufWritePre" }, {
   group = doidorGroup,
   pattern = "*",
   command = "Prettier",
+})
+
+autocmd('filetype', {
+  group = netrw_group,
+  pattern = 'netrw',
+  callback = function()
+    vim.keymap.set('n', 'l', '<CR>', { remap = true, buffer = true })
+  end,
 })
 
 vim.g.netrw_browse_split = 0

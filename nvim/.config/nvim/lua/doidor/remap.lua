@@ -43,3 +43,5 @@ vim.keymap.set("n", "<leader>vpp", "<cmd>e ~/src/nvim-config/lua/doidor/packer.l
 vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<CR>");
 
 vim.keymap.set("n", "<leader>p", vim.cmd.Prettier)
+
+vim.keymap.set("n", "-", ":Fern . -reveal=%<CR>")

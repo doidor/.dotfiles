@@ -55,7 +55,7 @@ return require('packer').startup(function(use)
 
   use("tpope/vim-surround")
   use("tpope/vim-commentary")
-  use("tpope/vim-vinegar")
+  -- use("tpope/vim-vinegar")
   use('prettier/vim-prettier')
 
   use("RRethy/vim-illuminate")
@@ -76,4 +76,16 @@ return require('packer').startup(function(use)
   }
 
   use('ThePrimeagen/vim-be-good')
+
+  use('lambdalisue/nerdfont.vim')
+  use{'lambdalisue/fern.vim',
+    requires={
+      'lambdalisue/fern-renderer-nerdfont.vim',
+      'lambdalisue/fern-hijack.vim',
+    },
+    config = function()
+      vim.g['fern#renderer'] = 'nerdfont'
+      vim.g['fern#default_hidden'] = 1
+    end
+  }
 end)

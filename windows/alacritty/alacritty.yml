@@ -124,7 +124,7 @@ font:
     #   - (macOS) Menlo
     #   - (Linux/BSD) monospace
     #   - (Windows) Consolas
-    family: Hack
+    family: Hack Nerd Font Mono
 
     # The `style` can be specified to pick a specific face.
 
@@ -137,7 +137,7 @@ font:
     #family: monospace
 
     # The `style` can be specified to pick a specific face.
-    #style: Bold
+    style: Bold
 
     # Italic font face
     #italic:
@@ -157,14 +157,14 @@ font:
     #
     # If the bold italic family is not specified, it will fall back to the
     # value specified for the normal font.
-    #family: monospace
+    # family: monospace
 
     # The `style` can be specified to pick a specific face.
 
-    style: Bold
+    #style: Bold
 
     # Point size
-    size: 18.0
+    size: 24.0
 
   # Offset is the extra space around each character. `offset.y` can be thought
   # of as modifying the line spacing, and `offset.x` as modifying the letter

@@ -45,3 +45,4 @@ vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<CR>");
 vim.keymap.set("n", "<leader>p", vim.cmd.Prettier)
 
 vim.keymap.set("n", "-", ":Fern . -reveal=%<CR>")
+vim.keymap.set("n", "<leader>-", ":Fern . -reveal=% -drawer -toggle -width=50<CR>")

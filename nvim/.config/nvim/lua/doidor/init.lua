@@ -37,6 +37,12 @@ autocmd({ "BufWritePre" }, {
   command = "Prettier",
 })
 
+autocmd({ "BufEnter" }, {
+  group = doidorGroup,
+  pattern = "*",
+  command = "execute 'FernDo -stay FernReveal ' . @%",
+})
+
 autocmd('filetype', {
   group = netrw_group,
   pattern = 'netrw',

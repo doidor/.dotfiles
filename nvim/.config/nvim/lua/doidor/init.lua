@@ -7,6 +7,7 @@ local autocmd = vim.api.nvim_create_autocmd
 local doidorGroup = augroup('doidor', {})
 local yank_group = augroup('HighlightYank', {})
 local netrw_group = augroup('netrw_mapping', {})
+local fern_group = augroup('fern', {})
 
 function R(name)
   print("Reloading...")
@@ -37,8 +38,8 @@ autocmd({ "BufWritePre" }, {
   command = "Prettier",
 })
 
-autocmd({ "BufEnter" }, {
-  group = doidorGroup,
+autocmd({ "FileType" }, {
+  group = fern_group,
   pattern = "*",
   command = "execute 'FernDo -stay FernReveal ' . @%",
 })

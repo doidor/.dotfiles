@@ -1,3 +1,4 @@
+require("doidor.packer").setup()
 require("doidor.set")
 require("doidor.remap")
 

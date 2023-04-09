@@ -61,3 +61,4 @@ vim.g.netrw_liststyle = 3
 vim.g.netrw_altv = 1
 vim.g.netrw_winsize = 25
 vim.g.buftabline_numbers = 2
+vim.g.buftabline_show = 1

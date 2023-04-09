@@ -39,9 +39,10 @@ autocmd({ "BufWritePre" }, {
   command = "Prettier",
 })
 
-autocmd({ "FileType" }, {
+-- Pattern hack to ignore Fern
+autocmd({ "BufEnter" }, {
   group = fern_group,
-  pattern = "*",
+  pattern = "/*",
   command = "execute 'FernDo -stay FernReveal ' . @%",
 })
 

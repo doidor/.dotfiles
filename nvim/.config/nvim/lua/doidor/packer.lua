@@ -121,6 +121,8 @@ function M.setup()
       end
     }
 
+    use('ap/vim-buftabline')
+
     -- Bootstrap Neovim
     if packer_bootstrap then
       print "Restart Neovim required after installation!"

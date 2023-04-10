@@ -50,13 +50,13 @@ function M.setup()
       requires = { { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope-live-grep-args.nvim' } }
     }
 
-    use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable 'make' == 1 }
+    use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable 'make' == 1,
+      cmd = { "Telescope" } }
 
-    use({ 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' })
-    use('nvim-treesitter/playground')
-    use('theprimeagen/harpoon')
-    use('mbbill/undotree')
-    use('tpope/vim-fugitive')
+    use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+    use { 'nvim-treesitter/playground', cmd = { 'TSPlaygroundToggle' } }
+    use { 'theprimeagen/harpoon', module = { "harpoon", "harpoon.cmd-ui", "harpoon.mark", "harpoon.ui", "harpoon.term" } }
+    use { 'mbbill/undotree', cmd = { "UndotreeToggle" } }
 
     use {
       'VonHeikemen/lsp-zero.nvim',
@@ -81,33 +81,32 @@ function M.setup()
       }
     }
 
-    use("folke/zen-mode.nvim")
-    use("github/copilot.vim")
-    use("eandrju/cellular-automaton.nvim")
+    use { "github/copilot.vim", event = "BufEnter" }
 
-    use("tpope/vim-surround")
-    use("tpope/vim-commentary")
-    -- use("tpope/vim-vinegar")
-    use('prettier/vim-prettier')
+    use{"tpope/vim-surround", event = "BufEnter"}
+    use{"tpope/vim-commentary", event = "BufEnter"}
+    -- {se("tpope/vim-vinegar")
+    use{'prettier/vim-prettier', event = "BufEnter"}
 
-    use("RRethy/vim-illuminate")
+    use{"RRethy/vim-illuminate", event = "BufEnter"}
 
     use {
       'nvim-lualine/lualine.nvim',
       requires = { 'kyazdani42/nvim-web-devicons', opt = true }
     }
 
-    use('APZelos/blamer.nvim')
-    use('airblade/vim-gitgutter')
+    use{'APZelos/blamer.nvim', event = "BufEnter"}
+    use{'airblade/vim-gitgutter', event = "BufEnter"}
 
     use("EdenEast/nightfox.nvim")
     use('editorconfig/editorconfig-vim')
     use {
       "windwp/nvim-autopairs",
+      event = "BufEnter",
       config = function() require("nvim-autopairs").setup {} end
     }
 
-    use('ThePrimeagen/vim-be-good')
+    use { 'ThePrimeagen/vim-be-good', cmd = { "VimBeGood" } }
 
     use('lambdalisue/nerdfont.vim')
     use { 'lambdalisue/fern.vim',
@@ -121,7 +120,7 @@ function M.setup()
       end
     }
 
-    use('ap/vim-buftabline')
+    use { 'ap/vim-buftabline', cmd = { "BufEnter" } }
 
     -- Bootstrap Neovim
     if packer_bootstrap then

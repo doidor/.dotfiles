@@ -83,20 +83,20 @@ function M.setup()
 
     use { "github/copilot.vim", event = "BufEnter" }
 
-    use{"tpope/vim-surround", event = "BufEnter"}
-    use{"tpope/vim-commentary", event = "BufEnter"}
+    use { "tpope/vim-surround", event = "BufEnter" }
+    use { "tpope/vim-commentary", event = "BufEnter" }
     -- {se("tpope/vim-vinegar")
-    use{'prettier/vim-prettier', event = "BufEnter"}
+    use { 'prettier/vim-prettier', event = "BufEnter" }
 
-    use{"RRethy/vim-illuminate", event = "BufEnter"}
+    use { "RRethy/vim-illuminate", event = "BufEnter" }
 
     use {
       'nvim-lualine/lualine.nvim',
       requires = { 'kyazdani42/nvim-web-devicons', opt = true }
     }
 
-    use{'APZelos/blamer.nvim', event = "BufEnter"}
-    use{'airblade/vim-gitgutter', event = "BufEnter"}
+    use { 'APZelos/blamer.nvim', event = "BufEnter" }
+    use { 'airblade/vim-gitgutter', event = "BufEnter" }
 
     use("EdenEast/nightfox.nvim")
     use('editorconfig/editorconfig-vim')
@@ -120,7 +120,7 @@ function M.setup()
       end
     }
 
-    use { 'ap/vim-buftabline', cmd = { "BufEnter" } }
+    use { 'ap/vim-buftabline' }
 
     -- Bootstrap Neovim
     if packer_bootstrap then

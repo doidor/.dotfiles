@@ -57,3 +57,5 @@ vim.keymap.set("n", "<leader>7", "<Plug>BufTabLine.Go(7)")
 vim.keymap.set("n", "<leader>8", "<Plug>BufTabLine.Go(8)")
 vim.keymap.set("n", "<leader>9", "<Plug>BufTabLine.Go(9)")
 vim.keymap.set("n", "<leader>10", "<Plug>BufTabLine.Go(10)")
+
+vim.keymap.set("n", "<leader>w", '<cmd>bd<CR>')

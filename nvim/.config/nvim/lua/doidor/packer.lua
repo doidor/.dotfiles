@@ -122,6 +122,9 @@ function M.setup()
 
     use { 'ap/vim-buftabline' }
 
+    use { 'brenoprata10/nvim-highlight-colors',
+      config = function() require('nvim-highlight-colors').setup {} end }
+
     -- Bootstrap Neovim
     if packer_bootstrap then
       print "Restart Neovim required after installation!"

@@ -105,6 +105,7 @@ export EDITOR=nvim
 # Example aliases
 alias zshconfig="$EDITOR ~/.zshrc"
 alias ra="ranger"
+alias e="nvim"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 export NVM_DIR="$HOME/.nvm"

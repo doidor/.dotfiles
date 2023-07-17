@@ -2,6 +2,7 @@
   addf = "!git ls-files -m -o --exclude-standard | fzf --print0 -m | xargs -0 -t -o git add"
   rbr = "!f() { git pull --rebase=interactive origin $1; }; f"
   logs = "!git log --oneline | head -n 5"
+  up = "!f() { git pull -X theirs origin $1; }; f"
 [pull]
   rebase = false
 [oh-my-zsh]

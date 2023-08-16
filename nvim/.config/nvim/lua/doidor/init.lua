@@ -64,3 +64,11 @@ vim.g.netrw_winsize = 25
 vim.g.buftabline_numbers = 2
 vim.g.buftabline_show = 1
 vim.g.buftabline_indicators = true
+
+vim.filetype.add({
+  extension = {
+    mdx = 'markdown.mdx',
+    filename = {},
+    pattern = {},
+  }
+})

@@ -123,6 +123,10 @@ function M.setup()
     use { 'brenoprata10/nvim-highlight-colors',
       config = function() require('nvim-highlight-colors').setup {} end }
 
+    use { 'akinsho/git-conflict.nvim', tag = "*", config = function()
+      require('git-conflict').setup()
+    end }
+
     -- Bootstrap Neovim
     if packer_bootstrap then
       print "Restart Neovim required after installation!"

@@ -59,3 +59,4 @@ vim.keymap.set("n", "<leader>9", "<Plug>BufTabLine.Go(9)")
 vim.keymap.set("n", "<leader>10", "<Plug>BufTabLine.Go(10)")
 
 vim.keymap.set("n", "<leader>w", '<cmd>bd<CR>')
+vim.keymap.set("n", "<leader>ww", '<cmd>bufdo bd<CR>')

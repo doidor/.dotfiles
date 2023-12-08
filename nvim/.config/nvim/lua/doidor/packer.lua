@@ -120,6 +120,14 @@ function M.setup()
       end
     }
 
+    use {'nvim-tree/nvim-web-devicons'}
+
+    use {'folke/trouble.nvim',
+      requires = {
+        'nvim-tree/nvim-web-devicons'
+      }
+    }
+
     use { 'brenoprata10/nvim-highlight-colors',
       config = function() require('nvim-highlight-colors').setup {} end }
 

@@ -62,3 +62,6 @@ vim.keymap.set("n", "<leader>w", '<cmd>bd<CR>')
 vim.keymap.set("n", "<leader>ww", '<cmd>bufdo bd<CR>')
 vim.keymap.set("n", "<leader>pp", '<cmd>TroubleToggle document_diagnostics<CR>')
 vim.keymap.set("n", "<leader>pg", '<cmd>TroubleToggle workspace_diagnostics<CR>')
+
+vim.keymap.set("n", "<leader>tv", "<c-w>v <esc> :term<CR>")
+vim.keymap.set("n", "<leader>th", "<c-w>s <esc> :term<CR>")

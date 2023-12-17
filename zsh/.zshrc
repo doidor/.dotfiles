@@ -113,6 +113,7 @@ export EDITOR=nvim
 alias zshconfig="$EDITOR ~/.zshrc"
 alias ra="ranger"
 alias e="nvim"
+alias vim="nvim"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 export NVM_DIR="$HOME/.nvm"

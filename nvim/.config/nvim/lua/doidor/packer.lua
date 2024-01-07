@@ -55,7 +55,6 @@ function M.setup()
 
     use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
     use { 'nvim-treesitter/playground', cmd = { 'TSPlaygroundToggle' } }
-    use { 'theprimeagen/harpoon', module = { "harpoon", "harpoon.cmd-ui", "harpoon.mark", "harpoon.ui", "harpoon.term" } }
     use { 'mbbill/undotree', cmd = { "UndotreeToggle" } }
 
     use {
@@ -105,8 +104,6 @@ function M.setup()
       event = "BufEnter",
       config = function() require("nvim-autopairs").setup {} end
     }
-
-    use { 'ThePrimeagen/vim-be-good', cmd = { "VimBeGood" } }
 
     use('lambdalisue/nerdfont.vim')
     use { 'lambdalisue/fern.vim',

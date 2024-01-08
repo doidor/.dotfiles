@@ -60,8 +60,10 @@ vim.keymap.set("n", "<leader>10", "<Plug>BufTabLine.Go(10)")
 
 vim.keymap.set("n", "<leader>w", '<cmd>bd<CR>')
 vim.keymap.set("n", "<leader>ww", '<cmd>bufdo bd<CR>')
-vim.keymap.set("n", "<leader>pp", '<cmd>TroubleToggle document_diagnostics<CR>')
-vim.keymap.set("n", "<leader>pg", '<cmd>TroubleToggle workspace_diagnostics<CR>')
+vim.keymap.set("n", "<leader>pp", function() require("trouble").toggle("document_diagnostics") end)
+vim.keymap.set("n", "<leader>pg", function() require("trouble").toggle("workspace_diagnostics") end)
+vim.keymap.set("n", "gR", function() require("trouble").toggle("lsp_references") end)
+vim.keymap.set("n", "gT", function() require("trouble").toggle("lsp_type_definitions") end)
 
 vim.keymap.set("n", "<leader>tv", "<c-w>v <esc> :term<CR>")
 vim.keymap.set("n", "<leader>th", "<c-w>s <esc> :term<CR>")

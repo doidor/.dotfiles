@@ -44,8 +44,7 @@ vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<CR>");
 
 vim.keymap.set("n", "<leader>p", vim.cmd.Prettier)
 
-vim.keymap.set("n", "-", ":Fern . -reveal=%<CR>")
-vim.keymap.set("n", "<leader>-", ":Fern . -reveal=% -drawer -toggle -width=50<CR>")
+vim.keymap.set("n", "-", ":Neotree reveal<CR>")
 
 vim.keymap.set("n", "<leader>1", "<Plug>BufTabLine.Go(1)")
 vim.keymap.set("n", "<leader>2", "<Plug>BufTabLine.Go(2)")

@@ -106,16 +106,47 @@ function M.setup()
     }
 
     use('lambdalisue/nerdfont.vim')
-    use { 'lambdalisue/fern.vim',
-      requires = {
-        'lambdalisue/fern-renderer-nerdfont.vim',
-        'lambdalisue/fern-hijack.vim',
-      },
-      config = function()
-        vim.g['fern#renderer'] = 'nerdfont'
-        vim.g['fern#default_hidden'] = 1
-      end
-    }
+
+    use {
+      "nvim-neo-tree/neo-tree.nvim",
+        branch = "v3.x",
+        requires = {
+          "nvim-lua/plenary.nvim",
+          "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+          "MunifTanjim/nui.nvim",
+          -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
+        },
+        config = function ()
+          require('neo-tree').setup({
+            close_if_last_window = true,
+
+            window = {
+              position = "current",
+              mappings = {
+                ["<cr>"] = "open",
+                ["l"] = "open",
+                ["h"] = "close_node",
+              },
+            },
+
+            filesystem = {
+              filtered_items = {
+                visible = true,
+                hide_dotfiles = false,
+                hide_gitignored = true,
+              },
+
+              follow_current_file = {
+                enabled = true,
+                leave_dirs_open = true,
+              },
+
+              hijack_netrw_behavior = "open_default"
+            },
+
+          })
+        end
+      }
 
     use {'nvim-tree/nvim-web-devicons'}
 

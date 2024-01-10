@@ -1,5 +1,3 @@
-vim.g.mapleader = " "
-
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
 
@@ -66,3 +64,4 @@ vim.keymap.set("n", "gT", function() require("trouble").toggle("lsp_type_definit
 
 vim.keymap.set("n", "<leader>tv", "<c-w>v <esc> :term<CR>")
 vim.keymap.set("n", "<leader>th", "<c-w>s <esc> :term<CR>")
+

@@ -4,4 +4,10 @@ return {
   dependencies = {
     "kyazdani42/nvim-web-devicons",
   },
+
+  config = function ()
+    require('lualine').setup()
+  end
+
+
 }

@@ -1,21 +1,21 @@
 return {
-  {'williamboman/mason.nvim'},
-  {'williamboman/mason-lspconfig.nvim'},
-  {'neovim/nvim-lspconfig'},
-  {'hrsh7th/cmp-nvim-lsp'},
-  {'hrsh7th/nvim-cmp'},
-  {'L3MON4D3/LuaSnip'},
+  { 'williamboman/mason.nvim' },
+  { 'williamboman/mason-lspconfig.nvim' },
+  { 'neovim/nvim-lspconfig' },
+  { 'hrsh7th/cmp-nvim-lsp' },
+  { 'hrsh7th/nvim-cmp' },
+  { 'L3MON4D3/LuaSnip' },
   {
     'VonHeikemen/lsp-zero.nvim',
 
     branch = 'v3.x',
 
-    config = function ()
+    config = function()
       local lsp_zero = require('lsp-zero')
       lsp_zero.extend_lspconfig()
 
       lsp_zero.on_attach(function(client, bufnr)
-        local opts = {buffer = bufnr, remap = false}
+        local opts = { buffer = bufnr, remap = false }
 
         vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
         vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
@@ -27,12 +27,11 @@ return {
         vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts)
         vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
         vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
-
       end)
 
       require('mason').setup({})
       require('mason-lspconfig').setup({
-        ensure_installed = {'tsserver', 'rust_analyzer'},
+        ensure_installed = { 'tsserver', 'rust_analyzer' },
         handlers = {
           lsp_zero.default_setup,
           lua_ls = function()
@@ -46,9 +45,9 @@ return {
 
       cmp.setup({
         sources = {
-          {name = 'path'},
-          {name = 'nvim_lsp'},
-          {name = 'nvim_lua'},
+          { name = 'path' },
+          { name = 'nvim_lsp' },
+          { name = 'nvim_lua' },
         },
         mapping = cmp.mapping.preset.insert({
           ['<C-Space>'] = cmp.mapping.complete(),

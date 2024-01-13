@@ -8,6 +8,8 @@ return {
   {
     'VonHeikemen/lsp-zero.nvim',
 
+    event = { 'BufReadPre', 'BufNewFile' },
+
     branch = 'v3.x',
 
     config = function()
@@ -51,7 +53,12 @@ return {
         },
         mapping = cmp.mapping.preset.insert({
           ['<C-Space>'] = cmp.mapping.complete(),
+          ['<CR>'] = cmp.mapping.confirm({ select = false })
         }),
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        }
       })
     end
   },

@@ -1,1 +1,5 @@
-return { "APZelos/blamer.nvim" }
+return {
+  "APZelos/blamer.nvim",
+
+  event = { 'BufReadPre', 'BufNewFile' },
+}

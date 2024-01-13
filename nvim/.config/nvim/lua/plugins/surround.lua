@@ -1,1 +1,5 @@
-return { "tpope/vim-surround" }
+return {
+  "tpope/vim-surround",
+
+  event = { 'BufReadPre', 'BufNewFile' },
+}

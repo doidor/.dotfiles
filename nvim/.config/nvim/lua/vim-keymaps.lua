@@ -26,15 +26,3 @@ vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
 vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
-
-vim.keymap.set("n", "<leader>p", vim.cmd.Prettier)
-
-vim.keymap.set("n", "-", ":Neotree reveal<CR>")
-
-vim.keymap.set("n", "<leader>w", '<cmd>bd<CR>')
-vim.keymap.set("n", "<leader>ww", '<cmd>bufdo bd<CR>')
-vim.keymap.set("n", "<leader>pp", function() require("trouble").toggle("document_diagnostics") end)
-vim.keymap.set("n", "<leader>pg", function() require("trouble").toggle("workspace_diagnostics") end)
-vim.keymap.set("n", "gR", function() require("trouble").toggle("lsp_references") end)
-vim.keymap.set("n", "gT", function() require("trouble").toggle("lsp_type_definitions") end)
-

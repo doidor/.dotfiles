@@ -1,1 +1,5 @@
-return { "editorconfig/editorconfig-vim" }
+return {
+  "editorconfig/editorconfig-vim",
+
+  event = { 'BufReadPre', 'BufNewFile' },
+}

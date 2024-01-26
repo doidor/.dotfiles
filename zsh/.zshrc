@@ -111,6 +111,7 @@ export EDITOR=nvim
 
 # Example aliases
 alias zshconfig="$EDITOR ~/.zshrc"
+alias sshconfig="$EDITOR ~/.ssh/config"
 alias ra="ranger"
 alias e="nvim"
 alias vim="nvim"

@@ -1,5 +1,6 @@
-return {
-  "airblade/vim-gitgutter",
+return {}
+-- return {
+--   "airblade/vim-gitgutter",
 
-  event = { 'BufReadPre', 'BufNewFile' },
-}
+--   event = { 'BufReadPre', 'BufNewFile' },
+-- }

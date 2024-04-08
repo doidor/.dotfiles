@@ -16,13 +16,13 @@ return {
       --     right_arrow = "━",
       --   },
       -- },
-      -- blank = {
-      --   enable = false,
-      -- },
-      -- line_num = {
-      --   enable = true,
-      --   use_treesitter = true,
-      -- },
+      blank = {
+        enable = false,
+      },
+      line_num = {
+        enable = true,
+        use_treesitter = true,
+      },
     })
   end
 }

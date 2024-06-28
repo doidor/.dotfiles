@@ -142,3 +142,4 @@ export FZF_DEFAULT_OPTS="--bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:tog
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
 
 eval "$(zoxide init zsh)"
+export PATH="/opt/homebrew/opt/pnpm@8/bin:$PATH"

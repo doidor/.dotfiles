@@ -115,6 +115,7 @@ alias sshconfig="$EDITOR ~/.ssh/config"
 alias ra="ranger"
 alias e="nvim"
 alias vim="nvim"
+alias neovide="neovide --fork"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 export NVM_DIR="$HOME/.nvm"

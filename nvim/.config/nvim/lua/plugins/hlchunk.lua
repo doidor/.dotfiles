@@ -1,29 +1,16 @@
 return {
   "shellRaining/hlchunk.nvim",
 
-  event = { "UIEnter" },
+  event = { "BufReadPre", "BufNewFile" },
 
   config = function()
-    require('hlchunk').setup({
-      -- chunk = {
-      --   enable = true,
-      --   use_treesitter = true,
-      --   chars = {
-      --     horizontal_line = "━",
-      --     vertical_line = "┃",
-      --     left_top = "┏",
-      --     left_bottom = "┗",
-      --     right_arrow = "━",
-      --   },
-      -- },
-      blank = {
-        enable = false,
+    require("hlchunk").setup({
+      chunk = {
+        enable = true
       },
-      line_num = {
-        enable = true,
-        use_treesitter = true,
-      },
+      indent = {
+        enable = true
+      }
     })
   end
 }
-

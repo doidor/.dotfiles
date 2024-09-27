@@ -79,8 +79,13 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+#
+# Custom plugins:
+# cd ~/.oh-my-zsh/custom/plugins
+# git clone https://github.com/zsh-users/zsh-autosuggestions.git
+# git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
 
-plugins=(git fzf zsh-dircolors-solarized)
+plugins=(git fzf zsh-dircolors-solarized zsh-autosuggestions zsh-syntax-highlighting)
 ZSH_DISABLE_COMPFIX=true
 source $ZSH/oh-my-zsh.sh
 
@@ -144,3 +149,6 @@ export FZF_DEFAULT_OPTS="--bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:tog
 
 eval "$(zoxide init zsh)"
 export PATH="/opt/homebrew/opt/pnpm@8/bin:$PATH"
+
+# eval "$(~/miniconda3/bin/conda shell.zsh hook)"
+source <(pkgx --shellcode)

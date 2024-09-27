@@ -15,6 +15,7 @@
   hide-dirty = 0
 [core]
   editor = nvim
+	longpaths = true
 [diff]
   tool = nvimdiff
 [difftool]

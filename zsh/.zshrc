@@ -152,3 +152,6 @@ export PATH="/opt/homebrew/opt/pnpm@8/bin:$PATH"
 
 # eval "$(~/miniconda3/bin/conda shell.zsh hook)"
 source <(pkgx --shellcode)
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/doidor/.cache/lm-studio/bin"

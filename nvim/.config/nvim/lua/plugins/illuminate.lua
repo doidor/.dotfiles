@@ -1,5 +1,6 @@
-return {
-  "RRethy/vim-illuminate",
+return {}
+-- return {
+--   "RRethy/vim-illuminate",
 
-  event = { 'BufReadPre', 'BufNewFile' },
-}
+--   event = { 'BufReadPre', 'BufNewFile' },
+-- }

@@ -1,16 +1,29 @@
 return {
-  'folke/trouble.nvim',
-
-  event = { 'BufReadPre', 'BufNewFile' },
-
-  dependencies = {
-    'nvim-tree/nvim-web-devicons'
-  },
-
-  config = function ()
-    vim.keymap.set("n", "<leader>pp", function() require("trouble").toggle("document_diagnostics") end)
-    vim.keymap.set("n", "<leader>pg", function() require("trouble").toggle("workspace_diagnostics") end)
-    vim.keymap.set("n", "gR", function() require("trouble").toggle("lsp_references") end)
-    vim.keymap.set("n", "gT", function() require("trouble").toggle("lsp_type_definitions") end)
-  end
+  {
+    "folke/trouble.nvim",
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = "Trouble",
+    keys = {
+      {
+        "<leader>pg",
+        "<cmd>Trouble diagnostics toggle<cr>",
+        desc = "Diagnostics (Trouble)",
+      },
+      {
+        "<leader>pp",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "<leader>cs",
+        "<cmd>Trouble symbols toggle focus=false<cr>",
+        desc = "Symbols (Trouble)",
+      },
+      {
+        "<leader>cl",
+        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+        desc = "LSP Definitions / references / ... (Trouble)",
+      },
+    },
+  }
 }

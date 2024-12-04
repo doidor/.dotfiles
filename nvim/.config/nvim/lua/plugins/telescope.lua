@@ -52,6 +52,7 @@ return {
       vim.keymap.set('n', '<leader>sg', require('telescope').extensions.live_grep_args.live_grep_args,
         { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
+      vim.keymap.set('n', '<leader>yr', builtin.registers, { desc = 'Search Registers' })
 
     end,
   },

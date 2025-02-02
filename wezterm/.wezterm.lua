@@ -14,8 +14,11 @@ end
 
 -- For example, changing the color scheme:
 config.color_scheme = 'Monokai Soda'
-config.font = wezterm.font('Hack Nerd Font', { weight = 'Bold' })
-config.font_size = 22.0
+
+-- config.font = wezterm.font('Hack Nerd Font', { weight = 'Bold' })
+config.font = wezterm.font('ProFont IIx Nerd Font Mono', { weight = 'Bold' })
+
+config.font_size = 20.0
 
 config.colors = {
   cursor_bg = '#ffffff',

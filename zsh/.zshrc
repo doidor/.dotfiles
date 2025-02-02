@@ -155,3 +155,5 @@ source <(pkgx --shellcode)
 
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/Users/doidor/.cache/lm-studio/bin"
+
+source <(pkgx --shellcode)  #docs.pkgx.sh/shellcode

@@ -17,12 +17,13 @@ return {
         notification = {
           wo = { wrap = true } -- Wrap notifications
         }
-      }
+      },
+      picker = {}
     },
     keys = {
       { "<leader>un", function() Snacks.notifier.hide() end,           desc = "Dismiss All Notifications" },
-      { "<leader>w", function() Snacks.bufdelete() end,               desc = "Delete Buffer" },
-      { "<leader>wa", function() Snacks.bufdelete.other() end,               desc = "Delete Buffer" },
+      { "<leader>w",  function() Snacks.bufdelete() end,               desc = "Delete Buffer" },
+      { "<leader>wa", function() Snacks.bufdelete.other() end,         desc = "Delete Buffer" },
       { "<leader>gg", function() Snacks.lazygit() end,                 desc = "Lazygit" },
       { "<leader>gb", function() Snacks.git.blame_line() end,          desc = "Git Blame Line" },
       { "<leader>gB", function() Snacks.gitbrowse() end,               desc = "Git Browse" },
@@ -50,7 +51,15 @@ return {
             },
           })
         end,
-      }
+      },
+      { "<C-p>", function() Snacks.picker.git_files() end, desc = "Find Git Files" },
+      { "<leader>sg", function() Snacks.picker.grep() end, desc = "Grep" },
+      { "<leader><space>", function() Snacks.picker.buffers() end, desc = "Buffers" },
+      { "<leader>yr", function() Snacks.picker.registers() end, desc = "Search Registers" },
+      { "<leader>sy", function() Snacks.picker.lsp_symbols() end, desc = "Search Symbols" },
+      { "<leader>sY", function() Snacks.picker.lsp_workspace_symbols() end, desc = "Search Workspace Symbols" },
+      { "gd", function() Snacks.picker.lsp_definitions() end, desc = "Goto Definition" },
+      { "<leader>vrr", function() Snacks.picker.lsp_references() end, desc = "Goto Definition" },
     },
     init = function()
       vim.api.nvim_create_autocmd("User", {
@@ -72,7 +81,7 @@ return {
           Snacks.toggle.diagnostics():map("<leader>ud")
           Snacks.toggle.line_number():map("<leader>ul")
           Snacks.toggle.option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 }):map(
-          "<leader>uc")
+            "<leader>uc")
           Snacks.toggle.treesitter():map("<leader>uT")
           Snacks.toggle.option("background", { off = "light", on = "dark", name = "Dark Background" }):map("<leader>ub")
           Snacks.toggle.inlay_hints():map("<leader>uh")

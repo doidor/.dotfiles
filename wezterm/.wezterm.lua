@@ -18,7 +18,7 @@ config.color_scheme = 'Monokai Soda'
 -- config.font = wezterm.font('Hack Nerd Font', { weight = 'Bold' })
 config.font = wezterm.font('ProFont IIx Nerd Font Mono', { weight = 'Bold' })
 
-config.font_size = 20.0
+config.font_size = 18.0
 
 config.colors = {
   cursor_bg = '#ffffff',

@@ -53,7 +53,7 @@ return {
         end,
       },
       { "<C-p>", function() Snacks.picker.git_files() end, desc = "Find Git Files" },
-      { "<leader>sg", function() Snacks.picker.grep() end, desc = "Grep" },
+      { "<leader>sg", function() Snacks.picker.grep({ hidden = true }) end, desc = "Grep" },
       { "<leader><space>", function() Snacks.picker.buffers() end, desc = "Buffers" },
       { "<leader>yr", function() Snacks.picker.registers() end, desc = "Search Registers" },
       { "<leader>sy", function() Snacks.picker.lsp_symbols() end, desc = "Search Symbols" },

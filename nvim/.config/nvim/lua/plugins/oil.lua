@@ -11,6 +11,7 @@ return {
       columns = {
         "icon",
         "size",
+        "mtime"
       },
 
       view_options = {

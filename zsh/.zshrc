@@ -119,7 +119,6 @@ alias zshconfig="$EDITOR ~/.zshrc"
 alias sshconfig="$EDITOR ~/.ssh/config"
 alias ra="ranger"
 alias e="nvim"
-alias vim="nvim"
 alias neovide="neovide --fork"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
@@ -156,4 +155,4 @@ source <(pkgx --shellcode)
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/Users/doidor/.cache/lm-studio/bin"
 
-source <(pkgx --shellcode)  #docs.pkgx.sh/shellcode
+eval "$(pkgx --quiet dev --shellcode)"  # https://github.com/pkgxdev/dev

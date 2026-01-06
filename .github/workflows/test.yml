@@ -41,6 +41,16 @@ jobs:
         env:
           CI: true
 
+      - name: Debug stow results
+        run: |
+          echo "Checking what was stowed..."
+          ls -la ~/ | grep -E "^\.|zshrc|gitconfig|tmux.conf" || echo "No dotfiles found in home"
+          echo "---"
+          echo "Checking if symlinks exist:"
+          ls -la ~/.zshrc || echo "~/.zshrc does not exist"
+          ls -la ~/.gitconfig || echo "~/.gitconfig does not exist"
+          ls -la ~/.tmux.conf || echo "~/.tmux.conf does not exist"
+
       - name: Verify zsh configuration loads
         run: |
           # Source Homebrew environment first
@@ -102,6 +112,16 @@ jobs:
           ./setup.sh
         env:
           CI: true
+
+      - name: Debug stow results
+        run: |
+          echo "Checking what was stowed..."
+          ls -la ~/ | grep -E "^\.|zshrc|gitconfig|tmux.conf" || echo "No dotfiles found in home"
+          echo "---"
+          echo "Checking if symlinks exist:"
+          ls -la ~/.zshrc || echo "~/.zshrc does not exist"
+          ls -la ~/.gitconfig || echo "~/.gitconfig does not exist"
+          ls -la ~/.tmux.conf || echo "~/.tmux.conf does not exist"
 
       - name: Verify zsh configuration loads
         run: |

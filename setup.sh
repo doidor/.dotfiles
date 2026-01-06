@@ -264,6 +264,25 @@ stow_dotfiles() {
 
     cd "$(dirname "$0")"
 
+    # Backup existing dotfiles that might conflict
+    backup_dir="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
+    local needs_backup=false
+
+    # Common dotfiles that might exist
+    local common_files=(".zshrc" ".gitconfig" ".tmux.conf" ".wezterm.lua")
+
+    for file in "${common_files[@]}"; do
+        if [ -e "$HOME/$file" ] && [ ! -L "$HOME/$file" ]; then
+            if [ "$needs_backup" = false ]; then
+                mkdir -p "$backup_dir"
+                print_warning "Backing up existing dotfiles to $backup_dir"
+                needs_backup=true
+            fi
+            mv "$HOME/$file" "$backup_dir/"
+            echo "  Backed up $file"
+        fi
+    done
+
     for folder in */; do
         folder="${folder%/}"
         echo "  Stowing $folder..."
@@ -272,6 +291,10 @@ stow_dotfiles() {
     done
 
     print_success "Dotfiles stowed"
+
+    if [ "$needs_backup" = true ]; then
+        print_warning "Your original dotfiles have been backed up to: $backup_dir"
+    fi
 }
 
 # Main installation flow

@@ -4,6 +4,27 @@ if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
 fi
 # End Nix
 
+# Platform detection
+case "$(uname -s)" in
+  Darwin)
+    export IS_MACOS=1
+    # Detect Homebrew location (Apple Silicon vs Intel)
+    if [ -d "/opt/homebrew" ]; then
+      export HOMEBREW_PREFIX="/opt/homebrew"
+    elif [ -d "/usr/local/Homebrew" ]; then
+      export HOMEBREW_PREFIX="/usr/local"
+    fi
+    ;;
+  Linux)
+    export IS_LINUX=1
+    # Check for Homebrew on Linux
+    if [ -d "/home/linuxbrew/.linuxbrew" ]; then
+      export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
+    elif [ -d "$HOME/.linuxbrew" ]; then
+      export HOMEBREW_PREFIX="$HOME/.linuxbrew"
+    fi
+    ;;
+esac
 
 # Fig pre block. Keep at the top of this file.
 [[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
@@ -11,7 +32,7 @@ fi
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/doidor/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -135,21 +156,26 @@ transfer(){ if [ $# -eq 0 ];then echo "No arguments specified.\nUsage:\n transfe
 eval "$(direnv hook zsh)"
 
 # bun completions
-[ -s "/Users/doidor/.bun/_bun" ] && source "/Users/doidor/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # Bun
-export BUN_INSTALL="/Users/doidor/.bun"
+export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+
+# Homebrew-specific paths (if Homebrew is installed)
+if [ -n "$HOMEBREW_PREFIX" ]; then
+  export PATH="$HOMEBREW_PREFIX/opt/libpq/bin:$PATH"
+  export PATH="$HOMEBREW_PREFIX/opt/pnpm@8/bin:$PATH"
+fi
+
 export FZF_DEFAULT_OPTS="--bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all"
 
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
 
 eval "$(zoxide init zsh)"
-export PATH="/opt/homebrew/opt/pnpm@8/bin:$PATH"
 
 # eval "$(~/miniconda3/bin/conda shell.zsh hook)"
 
 # Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/doidor/.cache/lm-studio/bin"
+export PATH="$PATH:$HOME/.cache/lm-studio/bin"

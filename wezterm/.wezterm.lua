@@ -27,7 +27,26 @@ config.colors = {
 config.show_tabs_in_tab_bar = false
 config.hide_tab_bar_if_only_one_tab = true
 
-config.default_prog = { '/opt/homebrew/bin/tmux', '-T 256' }
+-- Find tmux in common locations (portable across macOS Apple Silicon, Intel, Linux)
+local tmux_paths = {
+  '/opt/homebrew/bin/tmux',    -- macOS Apple Silicon
+  '/usr/local/bin/tmux',        -- macOS Intel
+  '/home/linuxbrew/.linuxbrew/bin/tmux',  -- Linux Homebrew
+  '/usr/bin/tmux',              -- Linux system
+  'tmux',                       -- Fallback to PATH
+}
+
+local tmux_cmd = 'tmux'
+for _, path in ipairs(tmux_paths) do
+  local f = io.open(path, 'r')
+  if f ~= nil then
+    io.close(f)
+    tmux_cmd = path
+    break
+  end
+end
+
+config.default_prog = { tmux_cmd, '-T 256' }
 
 -- and finally, return the configuration to wezterm
 return config

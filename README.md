@@ -1,8 +1,8 @@
 ## dotfiles setup
 
-This project contains multiple setup files for Windows, Linux and MacOS. When working on Windows, I use WSL for all tools, except Alacritty (which I install in Windows directly).
+This project contains setup files for macOS and Linux (including GitHub Codespaces). The configurations are designed to be portable across different platforms and Homebrew installations.
 
-To setup everything clone this repository into your home folder (`cd ~`), the run `./setup.sh` to [stow](https://www.gnu.org/software/stow/manual/stow.html) all folders.
+To setup everything clone this repository into your home folder (`cd ~`), then run `./setup.sh` to [stow](https://www.gnu.org/software/stow/manual/stow.html) all folders.
 
 ### Prerequisites
 

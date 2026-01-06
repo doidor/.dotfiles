@@ -54,12 +54,12 @@ echo
 
 # Test 3: Lua configuration files (Neovim & WezTerm)
 echo -e "${BLUE}→ Checking lua configurations...${NC}"
-if command_exists lua; then
+if command_exists luac; then
     LUA_ERRORS=0
 
     # Check WezTerm config
     if [ -f "wezterm/.wezterm.lua" ]; then
-        if lua -l wezterm/.wezterm.lua 2>/dev/null; then
+        if luac -p wezterm/.wezterm.lua 2>/dev/null; then
             echo -e "${GREEN}✓ .wezterm.lua syntax valid${NC}"
         else
             echo -e "${RED}✗ .wezterm.lua has syntax errors${NC}"
@@ -75,7 +75,7 @@ if command_exists lua; then
 
         for file in $NVIM_FILES; do
             ((NVIM_COUNT++))
-            if ! lua -e "dofile('$file')" 2>/dev/null; then
+            if ! luac -p "$file" 2>/dev/null; then
                 if [ $NVIM_FAILED -eq 0 ]; then
                     echo -e "${RED}✗ Neovim lua files with issues:${NC}"
                 fi
@@ -96,7 +96,7 @@ if command_exists lua; then
         ((ERRORS++))
     fi
 else
-    echo -e "${YELLOW}⚠ lua not installed, skipping lua checks${NC}"
+    echo -e "${YELLOW}⚠ luac not installed, skipping lua checks${NC}"
     ((WARNINGS++))
 fi
 echo

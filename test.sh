@@ -29,11 +29,11 @@ if command_exists shellcheck; then
         echo -e "${GREEN}✓ setup.sh passed shellcheck${NC}"
     else
         echo -e "${RED}✗ setup.sh has shellcheck issues${NC}"
-        ((ERRORS++))
+        ERRORS=$((ERRORS + 1))
     fi
 else
     echo -e "${YELLOW}⚠ shellcheck not installed, skipping shell script checks${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 echo
 
@@ -44,11 +44,11 @@ if command_exists zsh; then
         echo -e "${GREEN}✓ .zshrc syntax valid${NC}"
     else
         echo -e "${RED}✗ .zshrc has syntax errors${NC}"
-        ((ERRORS++))
+        ERRORS=$((ERRORS + 1))
     fi
 else
     echo -e "${YELLOW}⚠ zsh not installed, skipping zsh checks${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 echo
 
@@ -63,7 +63,7 @@ if command_exists luac; then
             echo -e "${GREEN}✓ .wezterm.lua syntax valid${NC}"
         else
             echo -e "${RED}✗ .wezterm.lua has syntax errors${NC}"
-            ((LUA_ERRORS++))
+            LUA_ERRORS=$((LUA_ERRORS + 1))
         fi
     fi
 
@@ -74,14 +74,14 @@ if command_exists luac; then
         NVIM_FAILED=0
 
         for file in $NVIM_FILES; do
-            ((NVIM_COUNT++))
+            NVIM_COUNT=$((NVIM_COUNT + 1))
             if ! luac -p "$file" 2>/dev/null; then
                 if [ $NVIM_FAILED -eq 0 ]; then
                     echo -e "${RED}✗ Neovim lua files with issues:${NC}"
                 fi
                 echo -e "  ${RED}• $file${NC}"
-                ((NVIM_FAILED++))
-                ((LUA_ERRORS++))
+                NVIM_FAILED=$((NVIM_FAILED + 1))
+                LUA_ERRORS=$((LUA_ERRORS + 1))
             fi
         done
 
@@ -93,11 +93,11 @@ if command_exists luac; then
     fi
 
     if [ $LUA_ERRORS -gt 0 ]; then
-        ((ERRORS++))
+        ERRORS=$((ERRORS + 1))
     fi
 else
     echo -e "${YELLOW}⚠ luac not installed, skipping lua checks${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 echo
 
@@ -109,7 +109,7 @@ if command_exists taplo; then
             echo -e "${GREEN}✓ .aerospace.toml syntax valid${NC}"
         else
             echo -e "${RED}✗ .aerospace.toml has syntax errors${NC}"
-            ((ERRORS++))
+            ERRORS=$((ERRORS + 1))
         fi
     fi
 elif command_exists toml-cli; then
@@ -118,12 +118,12 @@ elif command_exists toml-cli; then
             echo -e "${GREEN}✓ .aerospace.toml syntax valid${NC}"
         else
             echo -e "${RED}✗ .aerospace.toml has syntax errors${NC}"
-            ((ERRORS++))
+            ERRORS=$((ERRORS + 1))
         fi
     fi
 else
     echo -e "${YELLOW}⚠ taplo/toml-cli not installed, skipping TOML checks${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 echo
 
@@ -134,11 +134,11 @@ if command_exists git; then
         echo -e "${GREEN}✓ .gitconfig syntax valid${NC}"
     else
         echo -e "${RED}✗ .gitconfig has syntax errors${NC}"
-        ((ERRORS++))
+        ERRORS=$((ERRORS + 1))
     fi
 else
     echo -e "${YELLOW}⚠ git not installed, skipping git config checks${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 echo
 
@@ -152,12 +152,12 @@ if command_exists tmux; then
             echo -e "${GREEN}✓ .tmux.conf syntax valid${NC}"
         else
             echo -e "${YELLOW}⚠ .tmux.conf may have issues (or TPM plugins not installed)${NC}"
-            ((WARNINGS++))
+            WARNINGS=$((WARNINGS + 1))
         fi
     fi
 else
     echo -e "${YELLOW}⚠ tmux not installed, skipping tmux config checks${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 echo
 

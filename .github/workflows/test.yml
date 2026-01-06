@@ -43,17 +43,20 @@ jobs:
 
       - name: Verify zsh configuration loads
         run: |
-          # Use full path to zsh in case it's not in default PATH
-          /usr/bin/zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'" || /bin/zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
+          # Source Homebrew environment first
+          eval "$(/opt/homebrew/bin/brew shellenv)" || eval "$(/usr/local/bin/brew shellenv)"
+          zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
 
       - name: Verify tmux configuration loads
         run: |
+          eval "$(/opt/homebrew/bin/brew shellenv)" || eval "$(/usr/local/bin/brew shellenv)"
           if command -v tmux >/dev/null 2>&1; then
             tmux -f ~/.tmux.conf list-keys >/dev/null 2>&1 || echo "tmux config check skipped (plugins may not be installed)"
           fi
 
       - name: Verify neovim configuration
         run: |
+          eval "$(/opt/homebrew/bin/brew shellenv)" || eval "$(/usr/local/bin/brew shellenv)"
           if command -v nvim >/dev/null 2>&1; then
             nvim --headless -c "checkhealth" -c "quit" 2>&1 | head -20 || echo "nvim check completed"
           fi
@@ -65,6 +68,7 @@ jobs:
 
       - name: List installed tools
         run: |
+          eval "$(/opt/homebrew/bin/brew shellenv)" || eval "$(/usr/local/bin/brew shellenv)"
           echo "Installed tools:"
           for cmd in zsh tmux nvim git stow fzf rg; do
             if command -v $cmd >/dev/null 2>&1; then
@@ -90,17 +94,20 @@ jobs:
 
       - name: Verify zsh configuration loads
         run: |
-          # Use full path to zsh in case it's not in default PATH
-          /usr/bin/zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'" || /bin/zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
+          # Source Homebrew environment first
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
 
       - name: Verify tmux configuration loads
         run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           if command -v tmux >/dev/null 2>&1; then
             tmux -f ~/.tmux.conf list-keys >/dev/null 2>&1 || echo "tmux config check skipped (plugins may not be installed)"
           fi
 
       - name: Verify neovim configuration
         run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           if command -v nvim >/dev/null 2>&1; then
             nvim --headless -c "checkhealth" -c "quit" 2>&1 | head -20 || echo "nvim check completed"
           fi
@@ -112,6 +119,7 @@ jobs:
 
       - name: List installed tools
         run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           echo "Installed tools:"
           for cmd in zsh tmux nvim git stow fzf rg; do
             if command -v $cmd >/dev/null 2>&1; then

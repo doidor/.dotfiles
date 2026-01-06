@@ -63,8 +63,19 @@ jobs:
 
       - name: Verify git configuration
         run: |
-          [ -L ~/.gitconfig ] && echo "✓ .gitconfig symlinked"
-          git config --list | grep -q "alias.addf" && echo "✓ git aliases loaded"
+          if [ -L ~/.gitconfig ]; then
+            echo "✓ .gitconfig symlinked"
+          else
+            echo "✗ .gitconfig is not a symlink"
+            ls -la ~/.gitconfig || echo "✗ .gitconfig does not exist"
+            exit 1
+          fi
+          if git config --list | grep -q "alias.addf"; then
+            echo "✓ git aliases loaded"
+          else
+            echo "✗ git aliases not found"
+            exit 1
+          fi
 
       - name: List installed tools
         run: |
@@ -114,8 +125,19 @@ jobs:
 
       - name: Verify git configuration
         run: |
-          [ -L ~/.gitconfig ] && echo "✓ .gitconfig symlinked"
-          git config --list | grep -q "alias.addf" && echo "✓ git aliases loaded"
+          if [ -L ~/.gitconfig ]; then
+            echo "✓ .gitconfig symlinked"
+          else
+            echo "✗ .gitconfig is not a symlink"
+            ls -la ~/.gitconfig || echo "✗ .gitconfig does not exist"
+            exit 1
+          fi
+          if git config --list | grep -q "alias.addf"; then
+            echo "✓ git aliases loaded"
+          else
+            echo "✗ git aliases not found"
+            exit 1
+          fi
 
       - name: List installed tools
         run: |

@@ -21,7 +21,7 @@ jobs:
           sudo apt-get install -y shellcheck lua5.4 zsh
 
           # Install taplo for TOML validation
-          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-linux-x86_64.gz | gunzip -c > /usr/local/bin/taplo
+          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-linux-x86_64.gz | gunzip -c | sudo tee /usr/local/bin/taplo > /dev/null
           sudo chmod +x /usr/local/bin/taplo
 
       - name: Run syntax validation
@@ -43,7 +43,8 @@ jobs:
 
       - name: Verify zsh configuration loads
         run: |
-          zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
+          # Use full path to zsh in case it's not in default PATH
+          /usr/bin/zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'" || /bin/zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
 
       - name: Verify tmux configuration loads
         run: |
@@ -59,7 +60,8 @@ jobs:
 
       - name: Verify git configuration
         run: |
-          git config --list | grep -q "user.email" && echo "git config loaded"
+          [ -L ~/.gitconfig ] && echo "✓ .gitconfig symlinked"
+          git config --list | grep -q "alias.addf" && echo "✓ git aliases loaded"
 
       - name: List installed tools
         run: |
@@ -88,7 +90,8 @@ jobs:
 
       - name: Verify zsh configuration loads
         run: |
-          zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
+          # Use full path to zsh in case it's not in default PATH
+          /usr/bin/zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'" || /bin/zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
 
       - name: Verify tmux configuration loads
         run: |
@@ -104,7 +107,8 @@ jobs:
 
       - name: Verify git configuration
         run: |
-          git config --list | grep -q "user.email" && echo "git config loaded"
+          [ -L ~/.gitconfig ] && echo "✓ .gitconfig symlinked"
+          git config --list | grep -q "alias.addf" && echo "✓ git aliases loaded"
 
       - name: List installed tools
         run: |

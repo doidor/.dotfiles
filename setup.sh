@@ -267,8 +267,8 @@ stow_dotfiles() {
     for folder in */; do
         folder="${folder%/}"
         echo "  Stowing $folder..."
-        stow -D "$folder" 2>/dev/null || true
-        stow "$folder"
+        stow -D -t ~ "$folder" 2>/dev/null || true
+        stow -t ~ "$folder"
     done
 
     print_success "Dotfiles stowed"

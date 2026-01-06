@@ -63,3 +63,43 @@ git clone https://github.com/zsh-users/zsh-autosuggestions.git
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
 git clone https://github.com/seebi/dircolors-solarized.git zsh-dircolors-solarized
 ```
+
+### Testing
+
+This repository includes automated testing to validate configurations before deployment.
+
+#### Run Tests Locally
+
+```bash
+./test.sh
+```
+
+The test script validates:
+- Shell script syntax (setup.sh) using shellcheck
+- Zsh configuration syntax
+- Lua configurations (Neovim, WezTerm)
+- TOML configurations (AeroSpace)
+- Git configuration
+- Tmux configuration
+
+Install validation tools for complete testing:
+
+```bash
+# macOS
+brew install shellcheck lua taplo
+
+# Ubuntu/Debian
+sudo apt-get install shellcheck lua5.4
+curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-linux-x86_64.gz | gunzip -c > /usr/local/bin/taplo
+sudo chmod +x /usr/local/bin/taplo
+```
+
+#### Continuous Integration
+
+GitHub Actions automatically tests the dotfiles on every push:
+- **Syntax Validation**: Checks all config files for syntax errors
+- **macOS Installation**: Tests complete setup on macOS
+- **Linux Installation**: Tests complete setup on Ubuntu
+- **Stow Symlinks**: Validates symlink creation without conflicts
+
+View test results in the [Actions tab](../../actions) of the repository.

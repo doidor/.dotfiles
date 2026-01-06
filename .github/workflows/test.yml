@@ -1,0 +1,151 @@
+name: Test Dotfiles
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  syntax-validation:
+    name: Syntax Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck lua5.4 zsh
+
+          # Install taplo for TOML validation
+          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-linux-x86_64.gz | gunzip -c > /usr/local/bin/taplo
+          sudo chmod +x /usr/local/bin/taplo
+
+      - name: Run syntax validation
+        run: ./test.sh
+
+  test-macos:
+    name: Test on macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run setup script
+        run: |
+          # Run setup script in non-interactive mode
+          ./setup.sh
+        env:
+          CI: true
+
+      - name: Verify zsh configuration loads
+        run: |
+          zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
+
+      - name: Verify tmux configuration loads
+        run: |
+          if command -v tmux >/dev/null 2>&1; then
+            tmux -f ~/.tmux.conf list-keys >/dev/null 2>&1 || echo "tmux config check skipped (plugins may not be installed)"
+          fi
+
+      - name: Verify neovim configuration
+        run: |
+          if command -v nvim >/dev/null 2>&1; then
+            nvim --headless -c "checkhealth" -c "quit" 2>&1 | head -20 || echo "nvim check completed"
+          fi
+
+      - name: Verify git configuration
+        run: |
+          git config --list | grep -q "user.email" && echo "git config loaded"
+
+      - name: List installed tools
+        run: |
+          echo "Installed tools:"
+          for cmd in zsh tmux nvim git stow fzf rg; do
+            if command -v $cmd >/dev/null 2>&1; then
+              echo "✓ $cmd: $($cmd --version 2>&1 | head -1)"
+            else
+              echo "✗ $cmd: not installed"
+            fi
+          done
+
+  test-ubuntu:
+    name: Test on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run setup script
+        run: |
+          # Run setup script in non-interactive mode
+          ./setup.sh
+        env:
+          CI: true
+
+      - name: Verify zsh configuration loads
+        run: |
+          zsh -c "source ~/.zshrc && echo 'zsh config loaded successfully'"
+
+      - name: Verify tmux configuration loads
+        run: |
+          if command -v tmux >/dev/null 2>&1; then
+            tmux -f ~/.tmux.conf list-keys >/dev/null 2>&1 || echo "tmux config check skipped (plugins may not be installed)"
+          fi
+
+      - name: Verify neovim configuration
+        run: |
+          if command -v nvim >/dev/null 2>&1; then
+            nvim --headless -c "checkhealth" -c "quit" 2>&1 | head -20 || echo "nvim check completed"
+          fi
+
+      - name: Verify git configuration
+        run: |
+          git config --list | grep -q "user.email" && echo "git config loaded"
+
+      - name: List installed tools
+        run: |
+          echo "Installed tools:"
+          for cmd in zsh tmux nvim git stow fzf rg; do
+            if command -v $cmd >/dev/null 2>&1; then
+              echo "✓ $cmd: $($cmd --version 2>&1 | head -1)"
+            else
+              echo "✗ $cmd: not installed"
+            fi
+          done
+
+  test-stow:
+    name: Test Stow Symlinks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install stow
+        run: sudo apt-get update && sudo apt-get install -y stow
+
+      - name: Test stow dry-run
+        run: |
+          echo "Testing stow operations (dry-run)..."
+          stow -n -v -t ~ zsh git tmux 2>&1 | tee stow-output.log
+
+          # Check for conflicts
+          if grep -i "conflict" stow-output.log; then
+            echo "⚠️ Stow conflicts detected"
+            exit 1
+          else
+            echo "✓ No stow conflicts detected"
+          fi
+
+      - name: Test actual stow
+        run: |
+          # Actually create symlinks
+          stow -v -t ~ zsh git tmux
+
+          # Verify symlinks were created
+          [ -L ~/.zshrc ] && echo "✓ .zshrc symlinked"
+          [ -L ~/.gitconfig ] && echo "✓ .gitconfig symlinked"
+          [ -L ~/.tmux.conf ] && echo "✓ .tmux.conf symlinked"

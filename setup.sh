@@ -276,6 +276,19 @@ install_languages() {
     fi
 }
 
+# Install AI coding tools
+install_ai_tools() {
+    print_header "Installing AI coding tools..."
+
+    # OpenCode - AI coding assistant
+    if command_exists opencode; then
+        print_success "opencode already installed"
+    else
+        brew install opencode
+        print_success "opencode installed"
+    fi
+}
+
 # Install macOS-specific tools
 install_macos_tools() {
     if [ "$OS" != "macos" ]; then
@@ -376,6 +389,7 @@ main() {
     install_shell_enhancements
     install_version_managers
     install_languages
+    install_ai_tools
     install_macos_tools
     install_tpm
     stow_dotfiles

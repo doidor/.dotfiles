@@ -5,7 +5,13 @@ return {
     lazy = false,
     build = ":TSUpdate",
     config = function()
-      require('nvim-treesitter.configs').setup {
+      local status_ok, configs = pcall(require, 'nvim-treesitter.configs')
+      if not status_ok then
+        vim.notify("nvim-treesitter not installed yet", vim.log.levels.WARN)
+        return
+      end
+
+      configs.setup {
         -- A list of parser names, or "all"
         ensure_installed = { "javascript", "typescript", "c", "lua", "rust", "markdown", "html", "http", "regex", "markdown_inline", "go", "python" },
 

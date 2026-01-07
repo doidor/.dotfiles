@@ -98,6 +98,27 @@ install_required_tools() {
         print_success "zsh installed"
     fi
 
+    # Set zsh as default shell if not already
+    if [ "$SHELL" != "$(command -v zsh)" ]; then
+        print_header "Setting zsh as default shell..."
+        ZSH_PATH=$(command -v zsh)
+
+        # Add zsh to /etc/shells if not present
+        if ! grep -q "$ZSH_PATH" /etc/shells 2>/dev/null; then
+            echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
+        fi
+
+        # Change default shell
+        if command_exists chsh; then
+            chsh -s "$ZSH_PATH" || print_warning "Could not change default shell. Try: chsh -s $ZSH_PATH"
+            print_success "Default shell set to zsh (will take effect on next login)"
+        else
+            print_warning "chsh not available. Default shell not changed."
+        fi
+    else
+        print_success "zsh is already the default shell"
+    fi
+
     # Oh-my-zsh
     if [ -d "$HOME/.oh-my-zsh" ]; then
         print_success "oh-my-zsh already installed"

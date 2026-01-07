@@ -7,7 +7,7 @@ return {
     config = function()
       local status_ok, configs = pcall(require, 'nvim-treesitter.configs')
       if not status_ok then
-        vim.notify("nvim-treesitter not installed yet", vim.log.levels.WARN)
+        -- Plugin not installed yet, lazy.nvim will call config again after install
         return
       end
 

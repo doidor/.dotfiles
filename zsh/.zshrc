@@ -26,6 +26,11 @@ case "$(uname -s)" in
     ;;
 esac
 
+# Initialize Homebrew environment if it exists
+if [ -n "$HOMEBREW_PREFIX" ] && [ -x "$HOMEBREW_PREFIX/bin/brew" ]; then
+  eval "$($HOMEBREW_PREFIX/bin/brew shellenv)"
+fi
+
 # Fig pre block. Keep at the top of this file.
 [[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
 # If you come from bash you might have to change your $PATH.

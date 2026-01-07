@@ -234,6 +234,47 @@ install_version_managers() {
     fi
 }
 
+# Install runtime languages (Node.js, Python)
+install_languages() {
+    print_header "Installing runtime languages..."
+
+    # Install Node.js via nvm (needed for Mason LSPs)
+    if command_exists node; then
+        print_success "Node.js already installed ($(node --version))"
+    else
+        if [ -d "$HOME/.nvm" ]; then
+            print_header "Installing Node.js via nvm..."
+            # Source nvm to use it in this script
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            nvm install --lts
+            nvm use --lts
+            print_success "Node.js installed via nvm"
+        else
+            print_warning "nvm not found, installing Node.js via Homebrew..."
+            brew install node
+            print_success "Node.js installed via Homebrew"
+        fi
+    fi
+
+    # Install Python3 (needed for Mason LSPs)
+    if command_exists python3; then
+        print_success "Python3 already installed ($(python3 --version))"
+    else
+        print_header "Installing Python3..."
+        if command_exists brew; then
+            brew install python3
+            print_success "Python3 installed via Homebrew"
+        elif command_exists apt-get; then
+            sudo apt-get install -y python3 python3-pip
+            print_success "Python3 installed via apt"
+        else
+            print_warning "Could not install Python3 automatically"
+        fi
+    fi
+}
+
 # Install macOS-specific tools
 install_macos_tools() {
     if [ "$OS" != "macos" ]; then
@@ -333,6 +374,7 @@ main() {
     install_core_tools
     install_shell_enhancements
     install_version_managers
+    install_languages
     install_macos_tools
     install_tpm
     stow_dotfiles

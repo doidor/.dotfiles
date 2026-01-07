@@ -1,17 +1,10 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    event = { 'BufReadPre', 'BufNewFile' },
-    lazy = false,
     build = ":TSUpdate",
+    event = { "BufReadPost", "BufNewFile" },
     config = function()
-      local status_ok, configs = pcall(require, 'nvim-treesitter.configs')
-      if not status_ok then
-        -- Plugin not installed yet, lazy.nvim will call config again after install
-        return
-      end
-
-      configs.setup {
+      require('nvim-treesitter.configs').setup {
         -- A list of parser names, or "all"
         ensure_installed = { "javascript", "typescript", "c", "lua", "rust", "markdown", "html", "http", "regex", "markdown_inline", "go", "python" },
 
@@ -41,7 +34,6 @@ return {
           enable = true,
         },
       }
-
     end
   }
 }

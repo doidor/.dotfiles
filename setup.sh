@@ -99,7 +99,8 @@ install_required_tools() {
     fi
 
     # Set zsh as default shell if not already
-    if [ "$SHELL" != "$(command -v zsh)" ]; then
+    # Compare basename to handle different zsh paths (e.g., /bin/zsh vs /usr/bin/zsh)
+    if [ "$(basename "$SHELL")" != "zsh" ]; then
         print_header "Setting zsh as default shell..."
         ZSH_PATH=$(command -v zsh)
 

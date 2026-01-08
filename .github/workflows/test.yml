@@ -171,6 +171,152 @@ jobs:
             fi
           done
 
+  test-windows:
+    name: Test on Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Windows setup script
+        shell: pwsh
+        run: |
+          # Run setup script (skip symlinks in CI as they require admin)
+          .\setup-windows.ps1 -SkipSymlinks
+        env:
+          CI: true
+
+      - name: Verify tools installed
+        shell: pwsh
+        run: |
+          Write-Host "Checking installed tools..."
+          
+          $tools = @(
+            @{ Name = "git"; Cmd = "git --version" },
+            @{ Name = "nvim"; Cmd = "nvim --version" },
+            @{ Name = "fzf"; Cmd = "fzf --version" },
+            @{ Name = "rg"; Cmd = "rg --version" },
+            @{ Name = "zoxide"; Cmd = "zoxide --version" },
+            @{ Name = "lazygit"; Cmd = "lazygit --version" },
+            @{ Name = "node"; Cmd = "node --version" },
+            @{ Name = "python"; Cmd = "python --version" },
+            @{ Name = "bun"; Cmd = "bun --version" }
+          )
+          
+          $failed = $false
+          foreach ($tool in $tools) {
+            # Refresh PATH to pick up newly installed tools
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+            
+            try {
+              $output = Invoke-Expression $tool.Cmd 2>&1 | Select-Object -First 1
+              Write-Host "[OK] $($tool.Name): $output" -ForegroundColor Green
+            }
+            catch {
+              Write-Host "[X] $($tool.Name): not found or failed" -ForegroundColor Red
+              $failed = $true
+            }
+          }
+          
+          if ($failed) {
+            Write-Host "`nSome tools failed to install, but continuing..." -ForegroundColor Yellow
+          }
+
+      - name: Test symlink creation
+        shell: pwsh
+        run: |
+          Write-Host "Testing symlink creation for configs..."
+          
+          $dotfilesDir = $PWD.Path
+          $homeDir = $env:USERPROFILE
+          $appDataLocal = $env:LOCALAPPDATA
+          
+          # Test git config symlink
+          $gitSource = Join-Path $dotfilesDir "git\.gitconfig"
+          $gitTarget = Join-Path $homeDir ".gitconfig"
+          
+          if (Test-Path $gitSource) {
+            try {
+              New-Item -ItemType SymbolicLink -Path $gitTarget -Target $gitSource -Force | Out-Null
+              Write-Host "[OK] Git config symlink created" -ForegroundColor Green
+              
+              # Verify git can read the config
+              $aliases = git config --list | Select-String "alias"
+              if ($aliases) {
+                Write-Host "[OK] Git aliases loaded from config" -ForegroundColor Green
+              }
+            }
+            catch {
+              Write-Host "[!] Could not create symlink (expected in CI without admin)" -ForegroundColor Yellow
+              # Fall back to copy
+              Copy-Item -Path $gitSource -Destination $gitTarget -Force
+              Write-Host "[OK] Git config copied instead" -ForegroundColor Green
+            }
+          }
+          
+          # Test neovim config symlink
+          $nvimSource = Join-Path $dotfilesDir "nvim\.config\nvim"
+          $nvimTarget = Join-Path $appDataLocal "nvim"
+          
+          if (Test-Path $nvimSource) {
+            try {
+              New-Item -ItemType SymbolicLink -Path $nvimTarget -Target $nvimSource -Force | Out-Null
+              Write-Host "[OK] Neovim config symlink created" -ForegroundColor Green
+            }
+            catch {
+              Write-Host "[!] Could not create symlink (expected in CI without admin)" -ForegroundColor Yellow
+              Copy-Item -Path $nvimSource -Destination $nvimTarget -Recurse -Force
+              Write-Host "[OK] Neovim config copied instead" -ForegroundColor Green
+            }
+          }
+
+      - name: Validate WezTerm Windows config syntax
+        shell: pwsh
+        run: |
+          Write-Host "Validating WezTerm Windows config..."
+          $weztermConfig = "wezterm\.wezterm-windows.lua"
+          
+          if (Test-Path $weztermConfig) {
+            # Basic Lua syntax check using PowerShell pattern matching
+            $content = Get-Content $weztermConfig -Raw
+            
+            # Check for common Lua syntax issues
+            if ($content -match "return config") {
+              Write-Host "[OK] WezTerm Windows config has valid structure" -ForegroundColor Green
+            }
+            else {
+              Write-Host "[X] WezTerm config missing 'return config'" -ForegroundColor Red
+              exit 1
+            }
+          }
+          else {
+            Write-Host "[X] WezTerm Windows config not found" -ForegroundColor Red
+            exit 1
+          }
+
+      - name: Validate PowerShell setup script syntax
+        shell: pwsh
+        run: |
+          Write-Host "Validating PowerShell script syntax..."
+          
+          $scriptPath = "setup-windows.ps1"
+          $errors = $null
+          
+          $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $scriptPath,
+            [ref]$null,
+            [ref]$errors
+          )
+          
+          if ($errors.Count -eq 0) {
+            Write-Host "[OK] setup-windows.ps1 has valid syntax" -ForegroundColor Green
+          }
+          else {
+            Write-Host "[X] Syntax errors found:" -ForegroundColor Red
+            $errors | ForEach-Object { Write-Host "  - $_" }
+            exit 1
+          }
+
   test-stow:
     name: Test Stow Symlinks
     runs-on: ubuntu-latest

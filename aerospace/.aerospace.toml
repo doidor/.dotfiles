@@ -206,3 +206,38 @@ automatically-unhide-macos-hidden-apps = false
     up = 'volume up'
     shift-down = ['volume set 0', 'mode main']
 
+# Window rules: assign apps to workspaces
+# See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
+
+# Workspace 1: Arc
+[[on-window-detected]]
+if.app-id = 'company.thebrowser.Browser'
+run = 'move-node-to-workspace 1'
+
+# Workspace 2: WezTerm
+[[on-window-detected]]
+if.app-id = 'com.github.wez.wezterm'
+run = 'move-node-to-workspace 2'
+
+# Workspace 2: Zed
+[[on-window-detected]]
+if.app-id = 'dev.zed.Zed'
+run = 'move-node-to-workspace 2'
+
+# Workspace 3: Microsoft Edge (Work profile)
+[[on-window-detected]]
+if.app-id = 'com.microsoft.edgemac'
+if.window-title-regex-substring = 'Work'
+run = 'move-node-to-workspace 3'
+
+# Workspace 3: Microsoft Teams
+[[on-window-detected]]
+if.app-id = 'com.microsoft.teams2'
+run = 'move-node-to-workspace 3'
+
+# Workspace 4: Microsoft Edge (GH Enterprise profile)
+[[on-window-detected]]
+if.app-id = 'com.microsoft.edgemac'
+if.window-title-regex-substring = 'GH Enterprise'
+run = 'move-node-to-workspace 4'
+

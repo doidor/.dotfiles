@@ -1,8 +1,34 @@
 ## dotfiles setup
 
-This project contains setup files for macOS and Linux (including GitHub Codespaces). The configurations are designed to be portable across different platforms and Homebrew installations.
+This project contains setup files for macOS, Linux (including GitHub Codespaces), and Windows. The configurations are designed to be portable across different platforms.
 
-To setup everything clone this repository into your home folder (`cd ~`), then run `./setup.sh` to [stow](https://www.gnu.org/software/stow/manual/stow.html) all folders.
+### Quick Start
+
+#### macOS / Linux
+
+Clone this repository into your home folder, then run the setup script:
+
+```bash
+cd ~
+git clone https://github.com/yourusername/.dotfiles.git
+cd .dotfiles
+./setup.sh
+```
+
+The script uses [GNU Stow](https://www.gnu.org/software/stow/manual/stow.html) to symlink all configuration folders.
+
+#### Windows
+
+Clone this repository and run the PowerShell setup script (as Administrator for best results):
+
+```powershell
+cd $env:USERPROFILE
+git clone https://github.com/yourusername/.dotfiles.git
+cd .dotfiles
+.\setup-windows.ps1
+```
+
+The Windows script uses [winget](https://github.com/microsoft/winget-cli) for package installation and creates symlinks for compatible configurations.
 
 ### Prerequisites
 
@@ -47,6 +73,31 @@ The dotfiles include availability checks, so missing optional tools won't cause 
 - [Rectangle](https://rectangleapp.com/) - Window management
 - [Alt-Tab](https://alt-tab-macos.netlify.app/) - Windows-style alt-tab
 - [MeetingBar](https://github.com/leits/MeetingBar) - Calendar in menu bar
+
+#### Windows Compatibility
+
+The following tools and configurations work on Windows:
+
+| Tool | Windows Support | Config Location |
+|------|-----------------|-----------------|
+| Git | Native | `%USERPROFILE%\.gitconfig` |
+| Neovim | Native | `%LOCALAPPDATA%\nvim` |
+| WezTerm | Native | `%USERPROFILE%\.wezterm.lua` |
+| Zed | Native | `%APPDATA%\Zed` |
+| fzf | Native | (no config needed) |
+| ripgrep | Native | (no config needed) |
+| zoxide | Native | (PowerShell profile) |
+| lazygit | Native | (no config needed) |
+| Node.js | Native | (no config needed) |
+| Python | Native | (no config needed) |
+| Bun | Native | (no config needed) |
+
+**Not available on Windows:** zsh, oh-my-zsh, tmux, stow, AeroSpace, Rectangle, Alt-Tab
+
+The Windows setup script (`setup-windows.ps1`) will:
+1. Install compatible tools via winget
+2. Create symlinks for git, neovim, wezterm, and zed configs
+3. Set up a PowerShell profile with zoxide and fzf integrations
 
 #### Other Optional Tools
 

@@ -5,7 +5,7 @@
   logs = "!git log --oneline | head -n 5"
   up = "!f() { git pull -X theirs origin $1; }; f"
 [pull]
-  rebase = false
+	rebase = true
 [oh-my-zsh]
   hide-status = 1
   hide-dirty = 1
@@ -24,3 +24,10 @@
   autoSquash = true
 [init]
 	defaultBranch = main
+[credential]
+	helper = 
+	helper = /usr/local/share/gcm-core/git-credential-manager
+[credential "https://dev.azure.com"]
+	useHttpPath = true
+[credential "azrepos:org/1esgitops"]
+	username = popatudor@microsoft.com

@@ -34,7 +34,7 @@ fi
 # Fig pre block. Keep at the top of this file.
 [[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
 # If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -146,14 +146,9 @@ alias sshconfig="$EDITOR ~/.ssh/config"
 alias ra="ranger"
 alias e="nvim"
 alias neovide="neovide --fork"
+alias li="litra toggle"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# NVM (Node Version Manager)
-if [ -d "$HOME/.nvm" ]; then
-  export NVM_DIR="$HOME/.nvm"
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-fi
 
 # Pyenv (Python Version Manager)
 if [ -d "$HOME/.pyenv" ]; then
@@ -164,7 +159,12 @@ if [ -d "$HOME/.pyenv" ]; then
   fi
 fi
 
-transfer(){ if [ $# -eq 0 ];then echo "No arguments specified.\nUsage:\n transfer <file|directory>\n ... | transfer <file_name>">&2;return 1;fi;if tty -s;then file="$1";file_name=$(basename "$file");if [ ! -e "$file" ];then echo "$file: No such file or directory">&2;return 1;fi;if [ -d "$file" ];then file_name="$file_name.zip" ,;(cd "$file"&&zip -r -q - .)|curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null,;else cat "$file"|curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null;fi;else file_name=$1;curl --progress-bar --upload-file "-" "https://transfer.sh/$file_name"|tee /dev/null;fi;}
+# NVM (Node Version Manager)
+if [ -d "$HOME/.nvm" ]; then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+fi
 
 # Direnv
 if command -v direnv >/dev/null 2>&1; then
@@ -201,3 +201,15 @@ fi
 if [ -d "$HOME/.cache/lm-studio/bin" ]; then
   export PATH="$PATH:$HOME/.cache/lm-studio/bin"
 fi
+
+# BEGIN Agency MANAGED BLOCK
+if [[ ":${PATH}:" != *":/Users/doidor/.config/agency/CurrentVersion:"* ]]; then
+    export PATH="/Users/doidor/.config/agency/CurrentVersion:${PATH}"
+fi
+# END Agency MANAGED BLOCK
+
+# BEGIN claude-cli MANAGED BLOCK
+if [[ ":${PATH}:" != *":/Users/doidor/.claude-cli/CurrentVersion:"* ]]; then
+    export PATH="/Users/doidor/.claude-cli/CurrentVersion:${PATH}"
+fi
+# END claude-cli MANAGED BLOCK

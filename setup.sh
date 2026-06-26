@@ -54,7 +54,9 @@ install_homebrew() {
         print_success "Homebrew already installed"
     else
         print_header "Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        # NONINTERACTIVE=1 skips Homebrew's "Press RETURN to continue" confirmation
+        # prompt so the install runs unattended (e.g. when scripted on Linux).
+        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
         # Add Homebrew to PATH for this session
         if [ "$OS" = "macos" ]; then

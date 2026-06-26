@@ -25,10 +25,19 @@ command_exists() {
 # Test 1: Shell script syntax with shellcheck
 echo -e "${BLUE}→ Checking shell scripts...${NC}"
 if command_exists shellcheck; then
-    if shellcheck setup.sh; then
-        echo -e "${GREEN}✓ setup.sh passed shellcheck${NC}"
-    else
-        echo -e "${RED}✗ setup.sh has shellcheck issues${NC}"
+    SHELL_SCRIPTS=("setup.sh" "bootstrap/install.sh")
+    SHELL_OK=1
+    for script in "${SHELL_SCRIPTS[@]}"; do
+        if [ -f "$script" ]; then
+            if shellcheck "$script"; then
+                echo -e "${GREEN}✓ $script passed shellcheck${NC}"
+            else
+                echo -e "${RED}✗ $script has shellcheck issues${NC}"
+                SHELL_OK=0
+            fi
+        fi
+    done
+    if [ $SHELL_OK -eq 0 ]; then
         ERRORS=$((ERRORS + 1))
     fi
 else

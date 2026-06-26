@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dotfiles · one-line install</title>
+  <meta name="description" content="Bootstrap doidor/.dotfiles on any macOS or Linux machine with a single curl command." />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --fg: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background: radial-gradient(1200px 600px at 50% -10%, #1b2330, var(--bg));
+      color: var(--fg);
+      font: 16px/1.6 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+    main { width: 100%; max-width: 720px; }
+    h1 { font-size: 1.9rem; margin: 0 0 .25rem; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); margin: 0 0 1.75rem; }
+    .cmd {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+    }
+    .cmd code { white-space: nowrap; color: var(--fg); }
+    .cmd .prompt { color: var(--green); user-select: none; }
+    button {
+      margin-left: auto;
+      flex: none;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 7px;
+      padding: .35rem .6rem;
+      cursor: pointer;
+      font: inherit;
+      font-size: .8rem;
+    }
+    button:hover { color: var(--fg); border-color: var(--accent); }
+    ol { color: var(--muted); margin: 1.75rem 0 0; padding-left: 1.25rem; }
+    ol li { margin: .35rem 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    footer { margin-top: 2rem; color: var(--muted); font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>dotfiles</h1>
+    <p class="sub">One command to set up a fresh macOS or Linux machine.</p>
+
+    <div class="cmd">
+      <span class="prompt">$</span>
+      <code id="cmd">curl -fsSL https://doidor.github.io/.dotfiles/install.sh | bash</code>
+      <button id="copy" type="button" aria-label="Copy command">Copy</button>
+    </div>
+
+    <ol>
+      <li>Clones <a href="https://github.com/doidor/.dotfiles">doidor/.dotfiles</a> into <code>~/.dotfiles</code> (or updates it).</li>
+      <li>Runs <code>setup.sh</code> — installs Homebrew, zsh + oh-my-zsh, neovim, tmux, fzf, ripgrep and more.</li>
+      <li>Symlinks every config with GNU Stow.</li>
+    </ol>
+
+    <footer>
+      Source: <a href="https://github.com/doidor/.dotfiles/blob/main/bootstrap/install.sh">bootstrap/install.sh</a>.
+      Review before piping to a shell.
+    </footer>
+  </main>
+
+  <script>
+    const btn = document.getElementById('copy');
+    const cmd = document.getElementById('cmd');
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(cmd.textContent.trim());
+        btn.textContent = 'Copied';
+        setTimeout(() => (btn.textContent = 'Copy'), 1500);
+      } catch (e) {
+        btn.textContent = 'Press ⌘/Ctrl+C';
+      }
+    });
+  </script>
+</body>
+</html>

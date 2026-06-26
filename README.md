@@ -2,7 +2,35 @@
 
 This project contains setup files for macOS and Linux (including GitHub Codespaces). The configurations are designed to be portable across different platforms and Homebrew installations.
 
-To setup everything clone this repository into your home folder (`cd ~`), then run `./setup.sh` to [stow](https://www.gnu.org/software/stow/manual/stow.html) all folders.
+### Quick install (one-liner)
+
+On a fresh machine, bootstrap everything with a single command:
+
+```bash
+curl -fsSL https://doidor.github.io/.dotfiles/install.sh | bash
+```
+
+This clones the repo into `~/.dotfiles` (or updates it if it already exists) and runs `setup.sh`, which installs dependencies and [stows](https://www.gnu.org/software/stow/manual/stow.html) all folders. The script lives in [`bootstrap/install.sh`](bootstrap/install.sh) and is published to GitHub Pages automatically by [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml).
+
+> The `doidor.github.io` URL redirects to the canonical `https://tudorpopa.com/.dotfiles/install.sh` — both work. Always review a script before piping it into a shell.
+
+You can override the defaults with environment variables:
+
+```bash
+# clone somewhere else, or track a different branch
+DOTFILES_DIR=~/dev/dotfiles DOTFILES_BRANCH=main \
+  bash -c "$(curl -fsSL https://doidor.github.io/.dotfiles/install.sh)"
+```
+
+### Manual install
+
+Prefer to do it yourself? Clone into `~/.dotfiles` and run the setup script:
+
+```bash
+git clone https://github.com/doidor/.dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+./setup.sh
+```
 
 ### Prerequisites
 

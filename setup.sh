@@ -362,6 +362,13 @@ stow_dotfiles() {
 
     for folder in */; do
         folder="${folder%/}"
+        # Skip directories that are not stow packages (deploy/build assets)
+        case "$folder" in
+            bootstrap)
+                echo "  Skipping $folder (not a stow package)"
+                continue
+                ;;
+        esac
         echo "  Stowing $folder..."
         stow -D -t ~ "$folder" 2>/dev/null || true
         stow -t ~ "$folder"

@@ -2,6 +2,11 @@
 
 set -e
 
+# Run Homebrew unattended. Modern Homebrew enables "ask mode" by default, which
+# prompts for confirmation before every `brew install`. HOMEBREW_NO_ASK disables
+# that prompt so all dependency installs run without manual confirmation.
+export HOMEBREW_NO_ASK=1
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'

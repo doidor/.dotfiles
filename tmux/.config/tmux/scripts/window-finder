@@ -31,7 +31,7 @@ selection=$(
             --delimiter='\t' \
             --with-nth=4.. \
             --accept-nth=1,2,3 \
-            --no-sort \
+            --tiebreak=index \
             --cycle \
             --layout=reverse \
             --border \

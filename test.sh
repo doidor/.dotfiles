@@ -25,7 +25,7 @@ command_exists() {
 # Test 1: Shell script syntax with shellcheck
 echo -e "${BLUE}→ Checking shell scripts...${NC}"
 if command_exists shellcheck; then
-    SHELL_SCRIPTS=("setup.sh" "bootstrap/install.sh")
+    SHELL_SCRIPTS=("setup.sh" "bootstrap/install.sh" "tmux/.config/tmux/scripts/window-finder")
     SHELL_OK=1
     for script in "${SHELL_SCRIPTS[@]}"; do
         if [ -f "$script" ]; then

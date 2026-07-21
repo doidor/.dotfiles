@@ -1,0 +1,54 @@
+#!/bin/sh
+
+set -eu
+
+if ! command -v fzf >/dev/null 2>&1; then
+    tmux display-message "fzf is required for the window finder"
+    exit 1
+fi
+
+delimiter=$(printf '\t')
+tmux_format="#{session_id}${delimiter}#{session_name}${delimiter}#{window_id}${delimiter}#{window_index}${delimiter}#{window_name}${delimiter}#{window_flags}${delimiter}#{window_panes}"
+
+selection=$(
+    tmux list-windows -a -F "$tmux_format" |
+        awk -F "$delimiter" '
+            BEGIN {
+                OFS = FS
+            }
+
+            $1 != current_session {
+                current_session = $1
+                print "session", $1, "", "[ " $2 " ]"
+            }
+
+            {
+                pane_label = $7 == 1 ? "1 pane" : $7 " panes"
+                print "window", $1, $3, "  " $4 ": " $5 $6 "  (" pane_label ")"
+            }
+        ' |
+        fzf \
+            --delimiter='\t' \
+            --with-nth=4.. \
+            --accept-nth=1,2,3 \
+            --no-sort \
+            --cycle \
+            --layout=reverse \
+            --border \
+            --prompt='window> ' \
+            --header='Enter: select  Esc: cancel'
+) || exit 0
+
+IFS="$delimiter" read -r kind session_id window_id _ <<EOF
+$selection
+EOF
+
+case "$kind" in
+    session)
+        tmux switch-client -t "$session_id"
+        ;;
+    window)
+        tmux select-window -t "$window_id"
+        tmux switch-client -t "$session_id"
+        ;;
+esac

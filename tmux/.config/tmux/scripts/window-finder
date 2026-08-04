@@ -2,32 +2,205 @@
 
 set -eu
 
+mru_option='@window-finder-mru'
+mru_limit=100
+
+record_window() {
+    window_id=$1
+    [ -n "$window_id" ] || return 0
+
+    recorded=$(tmux show-option -gqv "$mru_option")
+    updated=$(
+        printf '%s\n' "$recorded" |
+            awk -v selected="$window_id" -v limit="$mru_limit" '
+                BEGIN {
+                    printf "%s", selected
+                    count = 1
+                }
+
+                {
+                    for (i = 1; i <= NF && count < limit; i++) {
+                        if ($i != selected) {
+                            printf " %s", $i
+                            count++
+                        }
+                    }
+                }
+
+                END {
+                    print ""
+                }
+            '
+    )
+    tmux set-option -gq "$mru_option" "$updated"
+}
+
+select_window() {
+    target_window=$1
+    target_session=$2
+    target_client=${3:-}
+
+    tmux select-window -t "$target_window"
+
+    if [ -n "$target_client" ]; then
+        tmux switch-client -c "$target_client" -t "$target_session"
+    else
+        tmux switch-client -t "$target_session"
+    fi
+}
+
+# Most recently used window that is not the current one and still exists.
+previous_window() {
+    current_window=$1
+    recorded=$(tmux show-option -gqv "$mru_option")
+
+    tmux list-windows -a -F '#{window_id} #{session_id}' |
+        awk -v current="$current_window" -v mru="$recorded" '
+            {
+                session_of[$1] = $2
+            }
+
+            END {
+                count = split(mru, windows, " ")
+                for (i = 1; i <= count; i++) {
+                    if (windows[i] != current && windows[i] in session_of) {
+                        print windows[i], session_of[windows[i]]
+                        exit
+                    }
+                }
+            }
+        '
+}
+
+case "${1:-}" in
+    record)
+        record_window "${2:-}"
+        exit 0
+        ;;
+    toggle)
+        # The key binding passes these in so that tmux resolves them against
+        # the client that triggered it rather than an ambiguous default.
+        current_window=${2:-}
+        current_client=${3:-}
+
+        if [ -z "$current_window" ]; then
+            if [ -n "$current_client" ]; then
+                current_window=$(tmux display-message -p -c "$current_client" '#{window_id}')
+            else
+                current_window=$(tmux display-message -p '#{window_id}')
+            fi
+        fi
+
+        target=$(previous_window "$current_window")
+
+        if [ -z "$target" ]; then
+            tmux display-message 'window-finder: no previous window'
+            exit 0
+        fi
+
+        IFS=' ' read -r previous_id previous_session <<EOF
+$target
+EOF
+        select_window "$previous_id" "$previous_session" "$current_client"
+        exit 0
+        ;;
+esac
+
 if ! command -v fzf >/dev/null 2>&1; then
     tmux display-message "fzf is required for the window finder"
     exit 1
 fi
 
+record_window "$(tmux display-message -p '#{window_id}')"
+
 delimiter=$(printf '\t')
+escape=$(printf '\033')
+dim="${escape}[2m"
+reset="${escape}[0m"
 tmux_format="#{session_id}${delimiter}#{session_name}${delimiter}#{window_id}${delimiter}#{window_index}${delimiter}#{window_name}${delimiter}#{window_flags}${delimiter}#{window_panes}"
+mru=$(tmux show-option -gqv "$mru_option")
+preview='[ -n {3} ] && tmux display-message -p -t {3} "#{session_name} → #{window_name}   #{pane_current_path}" && tmux capture-pane -p -e -t {3}'
+
+# Vim-style modes. The navigation keys stay unbound while searching so that
+# they type normally, and are only rebound once Esc switches to normal mode.
+nav_keys='j,k,g,G,i,q'
+search_prompt='window> '
+normal_prompt='normal> '
+search_header='Enter: select  Esc: normal mode  Ctrl-P: preview'
+normal_header='j/k: move  g/G: top/bottom  i: search  Enter: select  q/Esc: quit'
+normal_mode="disable-search+change-prompt($normal_prompt)+change-header($normal_header)+rebind($nav_keys)"
+search_mode="enable-search+change-prompt($search_prompt)+change-header($search_header)+unbind($nav_keys)"
+# Esc enters normal mode while searching, and quits when already in normal mode.
+esc_action="transform:[ \"\${FZF_PROMPT%% *}\" = 'normal>' ] && echo abort || echo '$normal_mode'"
 
 selection=$(
     tmux list-windows -a -F "$tmux_format" |
-        awk -F "$delimiter" '
+        awk -F "$delimiter" -v mru="$mru" '
+            BEGIN {
+                OFS = FS
+                mru_count = split(mru, mru_windows, " ")
+                for (i = 1; i <= mru_count; i++) {
+                    window_rank[mru_windows[i]] = i
+                }
+            }
+
+            {
+                rank = $3 in window_rank ? window_rank[$3] : 1000000 + NR
+                rows[NR] = $0
+                row_session[NR] = $1
+                row_rank[NR] = rank
+
+                if (!($1 in session_rank) || rank < session_rank[$1]) {
+                    session_rank[$1] = rank
+                }
+                if (!($1 in session_order)) {
+                    session_order[$1] = NR
+                }
+            }
+
+            END {
+                for (i = 1; i <= NR; i++) {
+                    session = row_session[i]
+                    print session_rank[session], session_order[session], row_rank[i], i, rows[i]
+                }
+            }
+        ' |
+        LC_ALL=C sort -t "$delimiter" -k1,1n -k2,2n -k3,3n -k4,4n |
+        awk -F "$delimiter" -v dim="$dim" -v reset="$reset" '
             BEGIN {
                 OFS = FS
             }
 
-            $1 != current_session {
-                current_session = $1
-                print "session", $1, "", "[ " $2 " ]"
+            {
+                rows[NR] = $0
+                entry = "  " $8 ": " $9 $10
+                if (length(entry) > width) {
+                    width = length(entry)
+                }
             }
 
-            {
-                pane_label = $7 == 1 ? "1 pane" : $7 " panes"
-                print "window", $1, $3, "  " $4 ": " $5 $6 "  (" pane_label ")"
+            END {
+                entry_format = "%-" width "s"
+
+                for (i = 1; i <= NR; i++) {
+                    $0 = rows[i]
+
+                    if ($5 != current_session) {
+                        current_session = $5
+                        print "session", $5, "", "[ " $6 " ]"
+                    }
+
+                    # The session name is repeated on every window row so that
+                    # duplicate window names stay distinguishable (and
+                    # searchable) once fzf filters the session headers out.
+                    pane_label = $11 == 1 ? "1 pane" : $11 " panes"
+                    entry = sprintf(entry_format, "  " $8 ": " $9 $10)
+                    print "window", $5, $7, entry "  " dim $6 "  (" pane_label ")" reset
+                }
             }
         ' |
         fzf \
+            --ansi \
             --delimiter='\t' \
             --with-nth=4.. \
             --accept-nth=1,2,3 \
@@ -35,8 +208,19 @@ selection=$(
             --cycle \
             --layout=reverse \
             --border \
-            --prompt='window> ' \
-            --header='Enter: select  Esc: cancel'
+            --preview="$preview" \
+            --preview-window='right,50%,border-left,wrap' \
+            --prompt="$search_prompt" \
+            --header="$search_header" \
+            --bind='ctrl-p:toggle-preview' \
+            --bind="start:unbind($nav_keys)" \
+            --bind="esc:$esc_action" \
+            --bind="i:$search_mode" \
+            --bind='j:down' \
+            --bind='k:up' \
+            --bind='g:first' \
+            --bind='G:last' \
+            --bind='q:abort'
 ) || exit 0
 
 IFS="$delimiter" read -r kind session_id window_id _ <<EOF
@@ -48,7 +232,6 @@ case "$kind" in
         tmux switch-client -t "$session_id"
         ;;
     window)
-        tmux select-window -t "$window_id"
-        tmux switch-client -t "$session_id"
+        select_window "$window_id" "$session_id"
         ;;
 esac

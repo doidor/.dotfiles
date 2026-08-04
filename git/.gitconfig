@@ -31,3 +31,5 @@
 	useHttpPath = true
 [credential "azrepos:org/1esgitops"]
 	username = popatudor@microsoft.com
+[credential "azrepos:org/msasg"]
+	username = popatudor@microsoft.com

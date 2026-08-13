@@ -119,7 +119,7 @@ dim="${escape}[2m"
 reset="${escape}[0m"
 tmux_format="#{session_id}${delimiter}#{session_name}${delimiter}#{window_id}${delimiter}#{window_index}${delimiter}#{window_name}${delimiter}#{window_flags}${delimiter}#{window_panes}"
 mru=$(tmux show-option -gqv "$mru_option")
-preview='[ -n {3} ] && tmux display-message -p -t {3} "#{session_name} → #{window_name}   #{pane_current_path}" && tmux capture-pane -p -e -t {3}'
+preview='tmux display-message -p -t {2} "#{session_name} → #{window_name}   #{pane_current_path}" && tmux capture-pane -p -e -t {2}'
 
 # Vim-style modes. The navigation keys stay unbound while searching so that
 # they type normally, and are only rebound once Esc switches to normal mode.
@@ -144,28 +144,13 @@ selection=$(
                 }
             }
 
+            # Windows that have never been visited sort after the ones that
+            # have, keeping their original order among themselves.
             {
-                rank = $3 in window_rank ? window_rank[$3] : 1000000 + NR
-                rows[NR] = $0
-                row_session[NR] = $1
-                row_rank[NR] = rank
-
-                if (!($1 in session_rank) || rank < session_rank[$1]) {
-                    session_rank[$1] = rank
-                }
-                if (!($1 in session_order)) {
-                    session_order[$1] = NR
-                }
-            }
-
-            END {
-                for (i = 1; i <= NR; i++) {
-                    session = row_session[i]
-                    print session_rank[session], session_order[session], row_rank[i], i, rows[i]
-                }
+                print ($3 in window_rank ? window_rank[$3] : 1000000 + NR), NR, $0
             }
         ' |
-        LC_ALL=C sort -t "$delimiter" -k1,1n -k2,2n -k3,3n -k4,4n |
+        LC_ALL=C sort -t "$delimiter" -k1,1n -k2,2n |
         awk -F "$delimiter" -v dim="$dim" -v reset="$reset" '
             BEGIN {
                 OFS = FS
@@ -173,7 +158,7 @@ selection=$(
 
             {
                 rows[NR] = $0
-                entry = "  " $8 ": " $9 $10
+                entry = $6 ": " $7 $8
                 if (length(entry) > width) {
                     width = length(entry)
                 }
@@ -185,25 +170,19 @@ selection=$(
                 for (i = 1; i <= NR; i++) {
                     $0 = rows[i]
 
-                    if ($5 != current_session) {
-                        current_session = $5
-                        print "session", $5, "", "[ " $6 " ]"
-                    }
-
-                    # The session name is repeated on every window row so that
-                    # duplicate window names stay distinguishable (and
-                    # searchable) once fzf filters the session headers out.
-                    pane_label = $11 == 1 ? "1 pane" : $11 " panes"
-                    entry = sprintf(entry_format, "  " $8 ": " $9 $10)
-                    print "window", $5, $7, entry "  " dim $6 "  (" pane_label ")" reset
+                    # Every row carries its session name so that windows
+                    # sharing a name stay distinguishable and searchable.
+                    pane_label = $9 == 1 ? "1 pane" : $9 " panes"
+                    entry = sprintf(entry_format, $6 ": " $7 $8)
+                    print $3, $5, entry "  " dim $4 "  (" pane_label ")" reset
                 }
             }
         ' |
         fzf \
             --ansi \
             --delimiter='\t' \
-            --with-nth=4.. \
-            --accept-nth=1,2,3 \
+            --with-nth=3.. \
+            --accept-nth=1,2 \
             --tiebreak=index \
             --cycle \
             --layout=reverse \
@@ -223,15 +202,8 @@ selection=$(
             --bind='q:abort'
 ) || exit 0
 
-IFS="$delimiter" read -r kind session_id window_id _ <<EOF
+IFS="$delimiter" read -r session_id window_id _ <<EOF
 $selection
 EOF
 
-case "$kind" in
-    session)
-        tmux switch-client -t "$session_id"
-        ;;
-    window)
-        select_window "$window_id" "$session_id"
-        ;;
-esac
+select_window "$window_id" "$session_id"

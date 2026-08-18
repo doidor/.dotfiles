@@ -26,6 +26,32 @@ autocmd({ "BufWritePre" }, {
   command = [[%s/\s\+$//e]],
 })
 
+-- Folding: prefer LSP folding ranges, fall back to treesitter.
+-- Keys are stock vim: za (toggle), zc/zo, zR (open all), zM (close all).
+local function set_foldexpr(bufnr, expr)
+  for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
+    vim.wo[win][0].foldmethod = "expr"
+    vim.wo[win][0].foldexpr = expr
+  end
+end
+
+autocmd('LspAttach', {
+  group = doidorGroup,
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client:supports_method('textDocument/foldingRange') then
+      set_foldexpr(args.buf, 'v:lua.vim.lsp.foldexpr()')
+    end
+  end,
+})
+
+autocmd('LspDetach', {
+  group = doidorGroup,
+  callback = function(args)
+    set_foldexpr(args.buf, 'v:lua.vim.treesitter.foldexpr()')
+  end,
+})
+
 
 vim.g.netrw_browse_split = 0
 vim.g.netrw_banner = 0
@@ -56,6 +82,13 @@ vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
 vim.opt.smartindent = true
+
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldtext = ""
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.foldnestmax = 6
 
 vim.opt.wrap = true
 

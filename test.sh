@@ -170,6 +170,46 @@ else
 fi
 echo
 
+# Test 7: Fonts referenced by configs are installed
+echo -e "${BLUE}→ Checking fonts...${NC}"
+if [ "$(uname -s)" = "Darwin" ]; then
+    # Font family name -> filename fragment found in the installed .ttf files
+    FONT_NAMES=("Hack Nerd Font" "ProFont IIx Nerd Font Mono")
+    FONT_FILES=("HackNerdFont" "ProFontIIxNerdFontMono")
+    FONTS_MISSING=0
+
+    for i in "${!FONT_NAMES[@]}"; do
+        if compgen -G "$HOME/Library/Fonts/${FONT_FILES[$i]}*" >/dev/null ||
+            compgen -G "/Library/Fonts/${FONT_FILES[$i]}*" >/dev/null; then
+            echo -e "${GREEN}✓ ${FONT_NAMES[$i]} installed${NC}"
+        else
+            echo -e "${YELLOW}⚠ ${FONT_NAMES[$i]} not found (run ./setup.sh to install)${NC}"
+            FONTS_MISSING=$((FONTS_MISSING + 1))
+        fi
+    done
+
+    if [ $FONTS_MISSING -gt 0 ]; then
+        WARNINGS=$((WARNINGS + 1))
+    fi
+else
+    echo -e "${YELLOW}⚠ Not macOS, skipping font checks${NC}"
+    WARNINGS=$((WARNINGS + 1))
+fi
+echo
+
+# Test 8: No secrets committed to the repo
+echo -e "${BLUE}→ Checking for leaked secrets...${NC}"
+SECRET_PATTERNS='(ctx7sk-[A-Za-z0-9-]{8,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16})'
+if grep -rEIn --exclude-dir=.git "$SECRET_PATTERNS" . >/dev/null 2>&1; then
+    echo -e "${RED}✗ Possible secret found — do NOT commit:${NC}"
+    grep -rEIn --exclude-dir=.git -o "$SECRET_PATTERNS" . | sed 's/^/  /'
+    echo -e "${YELLOW}  Move it to ~/.zshrc.local and reference it via an env var${NC}"
+    ERRORS=$((ERRORS + 1))
+else
+    echo -e "${GREEN}✓ No known secret patterns found${NC}"
+fi
+echo
+
 # Summary
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then

@@ -196,6 +196,32 @@ install_core_tools() {
     fi
 }
 
+# Install fonts referenced by terminal/editor configs
+install_fonts() {
+    print_header "Installing fonts..."
+
+    # Nerd Font casks backing the families hardcoded in wezterm/.wezterm.lua
+    # and zed/.config/zed/settings.json. Without these the configs silently
+    # fall back to a default font on a fresh machine.
+    local fonts=("font-hack-nerd-font" "font-profont-nerd-font")
+
+    # Homebrew casks are macOS-only; `brew install --cask` fails on Linux.
+    if [ "$OS" != "macos" ]; then
+        print_warning "Font casks are macOS-only. On Linux, install Hack and ProFont IIx"
+        print_warning "manually from https://github.com/ryanoasis/nerd-fonts"
+        return
+    fi
+
+    for font in "${fonts[@]}"; do
+        if brew list --cask "$font" >/dev/null 2>&1; then
+            print_success "$font already installed"
+        else
+            brew install --cask "$font"
+            print_success "$font installed"
+        fi
+    done
+}
+
 # Install optional shell enhancements
 install_shell_enhancements() {
     print_header "Installing shell enhancements..."
@@ -208,6 +234,31 @@ install_shell_enhancements() {
         else
             brew install "$tool"
             print_success "$tool installed"
+        fi
+    done
+}
+
+# Install developer CLIs
+install_cli_tools() {
+    print_header "Installing developer CLIs..."
+
+    # Entries are "formula|command it provides". azure-cli installs as `az`,
+    # so the binary name is tracked separately for the idempotency check.
+    local tools=(
+        "azure-cli|az"
+        "gh|gh"
+    )
+
+    for entry in "${tools[@]}"; do
+        local formula="${entry%%|*}"
+        local cmd="${entry##*|}"
+
+        if command_exists "$cmd"; then
+            print_success "$formula already installed"
+        elif brew install "$formula"; then
+            print_success "$formula installed"
+        else
+            print_warning "$formula failed to install; install it manually"
         fi
     done
 }
@@ -295,6 +346,27 @@ install_ai_tools() {
         brew install opencode
         print_success "opencode installed"
     fi
+
+    # GitHub Copilot CLI. Use the `copilot-cli` cask: the similarly named
+    # `copilot` formula is the unrelated (and deprecated) AWS Copilot for ECS.
+    # The cask is macOS-only, so fall back to npm elsewhere.
+    if command_exists copilot; then
+        print_success "GitHub Copilot CLI already installed"
+    elif [ "$OS" = "macos" ]; then
+        if brew install --cask copilot-cli; then
+            print_success "GitHub Copilot CLI installed"
+        else
+            print_warning "GitHub Copilot CLI failed to install; install it manually"
+        fi
+    elif command_exists npm; then
+        if npm install -g @github/copilot; then
+            print_success "GitHub Copilot CLI installed"
+        else
+            print_warning "GitHub Copilot CLI failed to install; install it manually"
+        fi
+    else
+        print_warning "npm not found; skipping GitHub Copilot CLI"
+    fi
 }
 
 # Install macOS-specific tools
@@ -330,6 +402,89 @@ install_macos_tools() {
     fi
 }
 
+# Install Mac App Store-only apps
+install_mas_apps() {
+    # Amphetamine (keeps the Mac awake) - App Store ID 937984704
+    if [ -d "/Applications/Amphetamine.app" ]; then
+        print_success "Amphetamine already installed"
+        return
+    fi
+
+    # Amphetamine is not distributed as a Homebrew cask, so it needs `mas`.
+    if ! command_exists mas; then
+        brew install mas || {
+            print_warning "Could not install mas; skipping App Store apps"
+            return
+        }
+    fi
+
+    if mas install 937984704 2>/dev/null; then
+        print_success "Amphetamine installed"
+    else
+        print_warning "Could not install Amphetamine automatically."
+        print_warning "Sign in to the App Store, then run: mas install 937984704"
+    fi
+}
+
+# Point the default browser at OpenIn so it can route links
+set_default_browser() {
+    if ! command_exists defaultbrowser; then
+        brew install defaultbrowser || {
+            print_warning "Could not install defaultbrowser; set OpenIn manually"
+            return
+        }
+    fi
+
+    # macOS always shows a confirmation dialog for this change; it cannot be
+    # approved programmatically, so accept the prompt when it appears.
+    if defaultbrowser openin >/dev/null 2>&1; then
+        print_success "OpenIn set as default browser (confirm the macOS dialog)"
+    else
+        print_warning "Could not set OpenIn as default browser."
+        print_warning "Run 'defaultbrowser' to list tokens, then 'defaultbrowser <token>'"
+    fi
+}
+
+# Install apps that run at login/startup
+install_startup_apps() {
+    if [ "$OS" != "macos" ]; then
+        return
+    fi
+
+    print_header "Installing startup apps..."
+
+    # AeroSpace is handled in install_macos_tools; its stowed .aerospace.toml
+    # already sets start-at-login = true.
+    # Entries are "cask token|installed app bundle". The bundle check keeps this
+    # idempotent when an app was installed manually rather than through brew.
+    # displaylink and logitech-g-hub use pkg installers and will prompt for
+    # your password.
+    local apps=(
+        "1password|1Password.app"
+        "cotypist|Cotypist.app"
+        "displaylink|DisplayLink Manager.app"
+        "logitech-g-hub|lghub.app"
+        "openin|OpenIn.app"
+        "wispr-flow|Wispr Flow.app"
+    )
+
+    for entry in "${apps[@]}"; do
+        local cask="${entry%%|*}"
+        local app="${entry##*|}"
+
+        if brew list --cask "$cask" >/dev/null 2>&1 || [ -d "/Applications/$app" ]; then
+            print_success "$cask already installed"
+        elif brew install --cask "$cask"; then
+            print_success "$cask installed"
+        else
+            print_warning "$cask failed to install; install it manually"
+        fi
+    done
+
+    install_mas_apps
+    set_default_browser
+}
+
 # Install tmux plugin manager
 install_tpm() {
     print_header "Installing tmux plugin manager..."
@@ -352,21 +507,6 @@ stow_dotfiles() {
     backup_dir="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
     local needs_backup=false
 
-    # Common dotfiles that might exist
-    local common_files=(".zshrc" ".gitconfig" ".tmux.conf" ".wezterm.lua")
-
-    for file in "${common_files[@]}"; do
-        if [ -e "$HOME/$file" ] && [ ! -L "$HOME/$file" ]; then
-            if [ "$needs_backup" = false ]; then
-                mkdir -p "$backup_dir"
-                print_warning "Backing up existing dotfiles to $backup_dir"
-                needs_backup=true
-            fi
-            mv "$HOME/$file" "$backup_dir/"
-            echo "  Backed up $file"
-        fi
-    done
-
     for folder in */; do
         folder="${folder%/}"
         # Skip directories that are not stow packages (deploy/build assets)
@@ -376,6 +516,25 @@ stow_dotfiles() {
                 continue
                 ;;
         esac
+
+        # stow aborts the entire run on a single conflict, so move any real
+        # (non-symlink) file out of the way first. This walks the package tree
+        # so nested targets like .config/**/* are covered, not just top-level
+        # dotfiles.
+        while IFS= read -r rel; do
+            local target="$HOME/$rel"
+            if [ -e "$target" ] && [ ! -L "$target" ]; then
+                if [ "$needs_backup" = false ]; then
+                    mkdir -p "$backup_dir"
+                    print_warning "Backing up conflicting files to $backup_dir"
+                    needs_backup=true
+                fi
+                mkdir -p "$backup_dir/$(dirname "$rel")"
+                mv "$target" "$backup_dir/$rel"
+                echo "  Backed up $rel"
+            fi
+        done < <(find "$folder" -type f | sed "s|^$folder/||")
+
         echo "  Stowing $folder..."
         stow -D -t ~ "$folder" 2>/dev/null || true
         stow -t ~ "$folder"
@@ -401,11 +560,14 @@ main() {
     install_required_tools
     install_omz_plugins
     install_core_tools
+    install_fonts
     install_shell_enhancements
+    install_cli_tools
     install_version_managers
     install_languages
     install_ai_tools
     install_macos_tools
+    install_startup_apps
     install_tpm
     stow_dotfiles
 

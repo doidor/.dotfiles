@@ -36,6 +36,9 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 - Each directory is structured for GNU Stow (files mirror home directory structure)
 - Neovim plugins are in `nvim/.config/nvim/lua/plugins/` as individual Lua files
 - The setup script is idempotent - safe to run multiple times
+- Never commit secrets. Machine-local secrets and overrides go in `~/.zshrc.local`
+  (git-ignored, sourced by `.zshrc`) and are referenced via env vars. `./test.sh`
+  fails if a known secret pattern appears in the repo.
 
 ## Making Changes
 
@@ -50,6 +53,10 @@ The setup script automatically installs:
 - Core tools: neovim, tmux, fzf, ripgrep, WezTerm
 - Shell: zsh, oh-my-zsh, zsh-autosuggestions, zsh-syntax-highlighting
 - Enhancements: zoxide, direnv, lazygit
+- Developer CLIs: azure-cli (`az`), gh
 - Version managers: nvm, pyenv, bun
-- AI tools: opencode
+- AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere)
+- Fonts: Hack Nerd Font, ProFont Nerd Font (required by WezTerm and Zed configs)
 - macOS apps: AeroSpace, Rectangle, Alt-Tab
+- macOS startup apps: 1Password, Cotypist, DisplayLink, Logitech G Hub, OpenIn
+  (set as default browser), Wispr Flow, and Amphetamine (via `mas`, App Store only)

@@ -187,6 +187,10 @@ fi
 
 export FZF_DEFAULT_OPTS="--bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all"
 
+# Machine-local secrets and overrides (never committed; see .gitignore)
+# Holds things like CONTEXT7_API_KEY, which Zed passes to its MCP servers.
+[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
+
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
 

@@ -20,7 +20,7 @@
   },
   {
     "bindings": {
-      "space space": "tab_switcher::ToggleAll"
+      "ctrl-t": "tab_switcher::ToggleAll"
     }
   }
 ]

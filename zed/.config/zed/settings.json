@@ -7,30 +7,76 @@
 // custom settings, run the `open default settings` command
 // from the command palette or from `Zed` application menu.
 {
+  "terminal": {
+    "font_size": 20.0
+  },
+  "agent_servers": {
+    "opencode": {
+      "type": "registry"
+    }
+  },
+  "cli_default_open_behavior": "new_window",
+  "project_panel": {
+    "dock": "left"
+  },
+  "outline_panel": {
+    "dock": "right"
+  },
+  "collaboration_panel": {
+    "dock": "right"
+  },
+  "git_panel": {
+    "dock": "right"
+  },
+  "edit_predictions": {
+    "provider": "copilot"
+  },
+  "format_on_save": "off",
+  "agent_ui_font_size": 24,
+  "icon_theme": "Catppuccin Mocha",
+  "theme": "Ayu Dark",
+  "minimap": {
+    "show": "auto"
+  },
   "context_servers": {
-    "fluent-agent-prod": {
-      "source": "custom",
+    "fluent": {
       "enabled": true,
+      "url": "https://chat.fluentui.dev/mcp/server"
+    },
+    "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://chat.fluentui.dev/sse"],
-      "env": {}
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
     }
   },
   "agent": {
+    "dock": "right",
+    "tool_permissions": {
+      "default": "allow"
+    },
+    "default_profile": "write",
     "default_model": {
+      "effort": "high",
+      "enable_thinking": true,
       "provider": "copilot_chat",
-      "model": "claude-sonnet-4"
+      "model": "claude-opus-4.8"
     }
   },
   "telemetry": {
     "metrics": false
   },
   "vim_mode": true,
-  "ui_font_size": 16,
-  "buffer_font_size": 16,
-  "ui_font_family": "ProFont IIx Nerd Font Mono",
+  "ui_font_size": 20,
+  "buffer_font_size": 18,
   "buffer_font_family": "ProFont IIx Nerd Font Mono",
-  "tab_bar": {
-    "show": false
+  "buffer_font_weight": 900,
+  "relative_line_numbers": "enabled",
+  "languages": {
+    "Python": {
+      "language_servers": ["ty", "!basedpyright", "ruff"]
+    }
   }
 }

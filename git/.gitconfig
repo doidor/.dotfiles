@@ -33,3 +33,5 @@
 	username = popatudor@microsoft.com
 [credential "azrepos:org/msasg"]
 	username = popatudor@microsoft.com
+[credential "https://msft.ghe.com"]
+	provider = github

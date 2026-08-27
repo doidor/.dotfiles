@@ -16,16 +16,7 @@ end
 config.color_scheme = 'Monokai Soda'
 
 -- config.font = wezterm.font('Hack Nerd Font', { weight = 'Bold' })
--- ProFont IIx is a bitmap font: it carries seven EBDT strikes, but each one only
--- has bitmaps for 263 glyphs, essentially ASCII. Every Nerd Font icon exists in
--- the file as an outline with no bitmap behind it, so icons rendered as empty
--- boxes while text stayed crisp. ProFontWindows is the same ProFont design with
--- no bitmap tables at all, so its 6896 icons actually draw. Both ship in the
--- font-profont-nerd-font cask, so this needs no extra install.
-config.font = wezterm.font_with_fallback({
-  'ProFontWindows Nerd Font Mono',
-  'Symbols Nerd Font Mono',
-}, { weight = 'Bold' })
+config.font = wezterm.font('ProFont IIx Nerd Font Mono', { weight = 'Bold' })
 
 config.font_size = 20.0
 

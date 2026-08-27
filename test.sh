@@ -173,12 +173,9 @@ echo
 # Test 7: Fonts referenced by configs are installed
 echo -e "${BLUE}→ Checking fonts...${NC}"
 if [ "$(uname -s)" = "Darwin" ]; then
-    # Font family name -> filename fragment found in the installed .ttf files.
-    # ProFontWindows is what .wezterm.lua renders with, since ProFont IIx only
-    # carries bitmaps for ASCII and drops every Nerd Font icon. ProFont IIx is
-    # still checked because Zed's buffer font uses it.
-    FONT_NAMES=("Hack Nerd Font" "ProFont IIx Nerd Font Mono" "ProFontWindows Nerd Font Mono")
-    FONT_FILES=("HackNerdFont" "ProFontIIxNerdFontMono" "ProFontWindowsNerdFontMono")
+    # Font family name -> filename fragment found in the installed .ttf files
+    FONT_NAMES=("Hack Nerd Font" "ProFont IIx Nerd Font Mono")
+    FONT_FILES=("HackNerdFont" "ProFontIIxNerdFontMono")
     FONTS_MISSING=0
 
     for i in "${!FONT_NAMES[@]}"; do

@@ -532,6 +532,32 @@ install_tpm() {
     fi
 }
 
+# Dependencies of the tmux theme in tmux/.tmux.conf
+install_tmux_theme_deps() {
+    print_header "Installing tmux theme dependencies..."
+
+    # tokyo-night-tmux runs bash 4.2+ scripts and calls gawk and gsed, but macOS
+    # ships bash 3.2 and BSD sed. Idempotency is checked through brew rather than
+    # `command_exists`, since /bin/bash always exists and would mask the missing
+    # modern bash.
+    local formulae=("bash" "gawk" "gnu-sed")
+
+    if [ "$OS" != "macos" ]; then
+        print_success "Linux ships bash 4+, gawk and GNU sed already"
+        return
+    fi
+
+    for formula in "${formulae[@]}"; do
+        if brew list --formula "$formula" >/dev/null 2>&1; then
+            print_success "$formula already installed"
+        elif brew install "$formula"; then
+            print_success "$formula installed"
+        else
+            print_warning "$formula failed to install; the tmux status bar may render wrong"
+        fi
+    done
+}
+
 # Stow dotfiles
 stow_dotfiles() {
     print_header "Stowing dotfiles..."
@@ -604,6 +630,7 @@ main() {
     install_macos_tools
     install_startup_apps
     install_tpm
+    install_tmux_theme_deps
     stow_dotfiles
 
     echo -e "\n${GREEN}╔════════════════════════════════════════╗"

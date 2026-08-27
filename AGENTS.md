@@ -57,6 +57,8 @@ The setup script automatically installs:
   parsers), WezTerm
 - Shell: zsh, oh-my-zsh, zsh-autosuggestions, zsh-syntax-highlighting
 - Enhancements: zoxide, direnv, lazygit, chafa (sixel image viewer for tmux)
+- tmux theme deps (macOS): bash 4.2+, gawk, gnu-sed, required by tokyo-night-tmux
+  because macOS ships bash 3.2 and BSD sed
 - Developer CLIs: azure-cli (`az`), gh
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),

@@ -1,0 +1,210 @@
+#!/bin/sh
+
+set -eu
+
+# Fuzzy finder for the AI agent sessions ccmux tracks, deliberately built to
+# behave like the window finder next to it: same vim-style modes, same preview,
+# same keys. Rows are ordered by which agent wants attention first, then by the
+# window finder's own MRU list so the two pickers agree on what "recent" means.
+
+mru_option='@window-finder-mru'
+
+if ! command -v ccmux >/dev/null 2>&1; then
+    tmux display-message 'ccmux is required for the agent finder'
+    exit 1
+fi
+
+if ! command -v fzf >/dev/null 2>&1; then
+    tmux display-message 'fzf is required for the agent finder'
+    exit 1
+fi
+
+delimiter=$(printf '\t')
+escape=$(printf '\033')
+dim="${escape}[2m"
+reset="${escape}[0m"
+
+sessions_json=$(ccmux show --json 2>/dev/null || printf '[]')
+
+# tmux owns the pane -> window mapping that ccmux has no reason to know about.
+panes=$(tmux list-panes -a -F "#{pane_id}${delimiter}#{window_id}${delimiter}#{session_id}${delimiter}#{session_name}${delimiter}#{window_index}${delimiter}#{window_name}")
+mru=$(tmux show-option -gqv "$mru_option" || printf '')
+
+rows=$(
+    CCMUX_JSON="$sessions_json" TMUX_PANES="$panes" MRU="$mru" \
+        DELIM="$delimiter" DIM="$dim" RESET="$reset" python3 -c '
+import json
+import os
+import sys
+
+delim = os.environ["DELIM"]
+dim = os.environ["DIM"]
+reset = os.environ["RESET"]
+
+try:
+    sessions = json.loads(os.environ["CCMUX_JSON"] or "[]")
+except ValueError:
+    sessions = []
+
+if not isinstance(sessions, list):
+    sessions = []
+
+panes = {}
+for line in os.environ["TMUX_PANES"].splitlines():
+    parts = line.split(delim)
+    if len(parts) >= 6:
+        panes[parts[0]] = parts[1:6]
+
+rank = {w: i for i, w in enumerate(os.environ["MRU"].split())}
+
+RED = "\033[31m"
+YELLOW = "\033[33m"
+GREEN = "\033[32m"
+
+# Anything asking a question outranks work in flight, which outranks idle.
+PRIORITY = {"waiting": 0, "working": 1, "idle": 2}
+ATTENTION = {"permission": "PERM", "plan": "PLAN", "question": "ASK"}
+
+rendered = []
+for index, session in enumerate(sessions):
+    pane_id = session.get("tmuxPane") or ""
+    pane = panes.get(pane_id)
+    if not pane:
+        continue
+
+    window_id, session_id, session_name, window_index, window_name = pane
+    status = (session.get("status") or "idle").lower()
+    attention = (session.get("attentionType") or "").lower()
+
+    if status == "waiting":
+        tag = ATTENTION.get(attention, "WAIT")
+        color = RED
+    elif status == "working":
+        tag = "BUSY"
+        color = YELLOW
+    else:
+        tag = "IDLE"
+        color = GREEN
+
+    agent = session.get("agentType") or "agent"
+    project = session.get("project") or "?"
+    branch = session.get("gitBranch") or ""
+
+    prompt = session.get("lastPrompt")
+    if isinstance(prompt, dict):
+        prompt = prompt.get("text")
+    if not prompt:
+        prompts = session.get("prompts") or []
+        if prompts:
+            last = prompts[-1]
+            prompt = last.get("text") if isinstance(last, dict) else last
+    prompt = " ".join((prompt or "").split())
+    if len(prompt) > 60:
+        prompt = prompt[:59] + "\u2026"
+
+    tool = session.get("pendingTool") or ""
+
+    rendered.append({
+        "sort": (
+            PRIORITY.get(status, 3),
+            rank.get(window_id, 1000000 + index),
+            index,
+        ),
+        "id": session.get("id") or "",
+        "pane": pane_id,
+        "window": window_id,
+        "session": session_id,
+        "tag": tag,
+        "color": color,
+        "agent": agent,
+        "project": project,
+        "branch": branch,
+        "prompt": prompt,
+        "tool": tool,
+        "location": "%s: %s %s" % (session_name, window_index, window_name),
+    })
+
+rendered.sort(key=lambda row: row["sort"])
+
+if not rendered:
+    sys.exit(0)
+
+agent_width = max(len(row["agent"]) for row in rendered)
+project_width = max(len(row["project"]) for row in rendered)
+
+for row in rendered:
+    entry = "%s%-4s%s  %-*s  %-*s" % (
+        row["color"], row["tag"], reset,
+        agent_width, row["agent"],
+        project_width, row["project"],
+    )
+
+    detail = row["prompt"] or row["tool"]
+    if detail:
+        entry += "  " + detail
+
+    suffix = row["location"]
+    if row["branch"]:
+        suffix += "  (" + row["branch"] + ")"
+
+    print(delim.join([
+        row["id"], row["pane"], row["window"], row["session"],
+        entry + "  " + dim + suffix + reset,
+    ]))
+'
+)
+
+if [ -z "$rows" ]; then
+    tmux display-message 'agent-finder: no agent sessions found'
+    exit 0
+fi
+
+preview='tmux display-message -p -t {2} "#{session_name} → #{window_name}   #{pane_current_path}" && tmux capture-pane -p -e -t {2}'
+
+# Vim-style modes. The navigation keys stay unbound while searching so that
+# they type normally, and are only rebound once Esc switches to normal mode.
+nav_keys='j,k,g,G,i,q'
+search_prompt='agent> '
+normal_prompt='normal> '
+search_header='Enter: select  Esc: normal mode  Ctrl-P: preview'
+normal_header='j/k: move  g/G: top/bottom  i: search  Enter: select  q/Esc: quit'
+normal_mode="disable-search+change-prompt($normal_prompt)+change-header($normal_header)+rebind($nav_keys)"
+search_mode="enable-search+change-prompt($search_prompt)+change-header($search_header)+unbind($nav_keys)"
+# Esc enters normal mode while searching, and quits when already in normal mode.
+esc_action="transform:[ \"\${FZF_PROMPT%% *}\" = 'normal>' ] && echo abort || echo '$normal_mode'"
+
+selection=$(
+    printf '%s\n' "$rows" |
+        fzf \
+            --ansi \
+            --delimiter='\t' \
+            --with-nth=5.. \
+            --accept-nth=2,3,4 \
+            --tiebreak=index \
+            --cycle \
+            --layout=reverse \
+            --border \
+            --preview="$preview" \
+            --preview-window='right,50%,border-left,wrap' \
+            --prompt="$search_prompt" \
+            --header="$search_header" \
+            --bind='ctrl-p:toggle-preview' \
+            --bind="start:unbind($nav_keys)" \
+            --bind="esc:$esc_action" \
+            --bind="i:$search_mode" \
+            --bind='j:down' \
+            --bind='k:up' \
+            --bind='g:first' \
+            --bind='G:last' \
+            --bind='q:abort'
+) || exit 0
+
+IFS="$delimiter" read -r pane_id window_id session_id _ <<EOF
+$selection
+EOF
+
+[ -n "$window_id" ] || exit 0
+
+tmux select-window -t "$window_id"
+tmux select-pane -t "$pane_id"
+tmux switch-client -t "$session_id"

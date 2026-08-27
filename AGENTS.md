@@ -37,6 +37,7 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 - Neovim plugins are in `nvim/.config/nvim/lua/plugins/` as individual Lua files
 - tmux pickers live in `tmux/.config/tmux/scripts/` and share one fzf UX:
   `prefix + w` finds windows, `prefix + O` finds agent sessions
+- Copilot runs one session per tmux window; `prefix + A` opens a new one
 - The setup script is idempotent - safe to run multiple times
 - Never commit secrets. Machine-local secrets and overrides go in `~/.zshrc.local`
   (git-ignored, sourced by `.zshrc`) and are referenced via env vars. `./test.sh`

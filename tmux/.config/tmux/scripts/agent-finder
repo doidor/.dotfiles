@@ -25,13 +25,6 @@ escape=$(printf '\033')
 dim="${escape}[2m"
 reset="${escape}[0m"
 
-# Whatever is typed but not yet submitted in a pane's agent prompt. Used to
-# refuse injecting a command over something half-written.
-composer_text() {
-    tmux capture-pane -p -t "$1" 2>/dev/null |
-        awk '/❯/ { line = $0 } END { sub(/.*❯/, "", line); gsub(/^[[:space:]]+|[[:space:]]+$/, "", line); print line }'
-}
-
 sessions_json=$(ccmux show --json 2>/dev/null || printf '[]')
 
 # tmux owns the pane -> window mapping that ccmux has no reason to know about.
@@ -328,15 +321,11 @@ tmux select-pane -t "$pane_id"
 tmux switch-client -t "$session_id"
 
 # Landing on the pane is only half of it when the chosen session is one of the
-# others its process is holding; Copilot still has to be told to switch.
+# others its process is holding. Typing /resume into a live agent turned out to
+# be too brittle to do automatically: it depends on the composer being empty,
+# on the slash menu's timing, and on the agent not being mid-turn. The command
+# is offered instead, and copied so it can just be pasted.
 [ -n "$resume_id" ] || exit 0
 
-if [ -n "$(composer_text "$pane_id")" ]; then
-    tmux display-message "agent-finder: composer busy, run /resume $resume_id yourself"
-    exit 0
-fi
-
-tmux send-keys -t "$pane_id" "/resume $resume_id"
-# The slash command menu eats an Enter arriving in the same burst as the text.
-sleep 0.4
-tmux send-keys -t "$pane_id" Enter
+tmux set-buffer -- "/resume $resume_id"
+tmux display-message -d 4000 "session not in front: /resume $resume_id (copied, prefix + ] to paste)"

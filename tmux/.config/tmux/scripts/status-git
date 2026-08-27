@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Prints the current git branch for the status bar, or nothing at all when the
+# pane is not inside a work tree. Run from status-right on every status-interval
+# tick, so it stays cheap: no fetching, no counting of changed files.
+#
+# Lives in a script rather than inline in status-right because tmux passes #()
+# bodies to sh, which makes quoting fragile, and because test.sh shellchecks
+# everything in this directory.
+
+set -eu
+
+pane_path=${1:-}
+[ -n "$pane_path" ] || exit 0
+cd "$pane_path" 2>/dev/null || exit 0
+
+# --show-current is empty on a detached HEAD, so fall back to the short sha to
+# avoid a blank segment mid-rebase or mid-bisect.
+branch=$(git branch --show-current 2>/dev/null) || exit 0
+
+if [ -z "$branch" ]; then
+    branch=$(git rev-parse --short HEAD 2>/dev/null) || exit 0
+    [ -n "$branch" ] || exit 0
+    branch="detached@$branch"
+fi
+
+printf '%s' "$branch"

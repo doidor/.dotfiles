@@ -37,6 +37,11 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 - Neovim plugins are in `nvim/.config/nvim/lua/plugins/` as individual Lua files
 - tmux pickers live in `tmux/.config/tmux/scripts/` and share one fzf UX:
   `prefix + w` finds windows, `prefix + O` finds agent sessions
+- The tmux status bar is hand-rolled in `.tmux.conf`, with no theme plugin. Keep
+  it to BMP characters: Nerd Font icons above U+FFFF render as empty boxes in
+  this WezTerm build. Box-drawing characters are safe, WezTerm draws those
+  itself. Status bar helpers also go in `tmux/.config/tmux/scripts/`, where
+  `./test.sh` shellchecks everything.
 - Copilot runs one session per tmux window; `prefix + A` opens a new one
 - The setup script is idempotent - safe to run multiple times
 - Never commit secrets. Machine-local secrets and overrides go in `~/.zshrc.local`
@@ -57,8 +62,6 @@ The setup script automatically installs:
   parsers), WezTerm
 - Shell: zsh, oh-my-zsh, zsh-autosuggestions, zsh-syntax-highlighting
 - Enhancements: zoxide, direnv, lazygit, chafa (sixel image viewer for tmux)
-- tmux theme deps (macOS): bash 4.2+, gawk, gnu-sed, required by tokyo-night-tmux
-  because macOS ships bash 3.2 and BSD sed
 - Developer CLIs: azure-cli (`az`), gh
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),

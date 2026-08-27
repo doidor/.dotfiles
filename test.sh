@@ -25,7 +25,12 @@ command_exists() {
 # Test 1: Shell script syntax with shellcheck
 echo -e "${BLUE}→ Checking shell scripts...${NC}"
 if command_exists shellcheck; then
-    SHELL_SCRIPTS=("setup.sh" "bootstrap/install.sh" "tmux/.config/tmux/scripts/window-finder" "tmux/.config/tmux/scripts/agent-finder")
+    # The tmux scripts are globbed rather than listed, so a new one added to
+    # that directory is checked without having to be registered here too.
+    SHELL_SCRIPTS=("setup.sh" "bootstrap/install.sh")
+    for script in tmux/.config/tmux/scripts/*; do
+        [ -f "$script" ] && SHELL_SCRIPTS+=("$script")
+    done
     SHELL_OK=1
     for script in "${SHELL_SCRIPTS[@]}"; do
         if [ -f "$script" ]; then

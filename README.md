@@ -58,15 +58,6 @@ The dotfiles include availability checks, so missing optional tools won't cause 
 - [direnv](https://direnv.net/) - Automatic environment variable loading per directory
 - [lazygit](https://github.com/jesseduffield/lazygit) - Terminal UI for git
 
-#### tmux Theme Dependencies (macOS)
-
-The tokyo-night-tmux status bar runs bash 4.2+ scripts and calls `gawk` and
-`gsed`, none of which macOS provides (it ships bash 3.2 and BSD sed).
-
-- [bash](https://www.gnu.org/software/bash/) - Installed alongside macOS's 3.2, not replacing it
-- [gawk](https://www.gnu.org/software/gawk/) - GNU awk
-- [gnu-sed](https://www.gnu.org/software/sed/) - GNU sed, provides `gsed`
-
 #### Version Managers (Optional)
 
 - [nvm](https://github.com/nvm-sh/nvm) - Node.js version manager

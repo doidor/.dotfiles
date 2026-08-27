@@ -25,6 +25,13 @@ escape=$(printf '\033')
 dim="${escape}[2m"
 reset="${escape}[0m"
 
+# Whatever is typed but not yet submitted in a pane's agent prompt. Used to
+# refuse injecting a command over something half-written.
+composer_text() {
+    tmux capture-pane -p -t "$1" 2>/dev/null |
+        awk '/❯/ { line = $0 } END { sub(/.*❯/, "", line); gsub(/^[[:space:]]+|[[:space:]]+$/, "", line); print line }'
+}
+
 sessions_json=$(ccmux show --json 2>/dev/null || printf '[]')
 
 # tmux owns the pane -> window mapping that ccmux has no reason to know about.
@@ -218,6 +225,9 @@ for index, agent in enumerate(agents):
             "pane": pane_id,
             "window": window_id,
             "tmux_session": tmux_session,
+            # Picking a session the pane is not showing means asking Copilot to
+            # switch to it; the one already in front needs nothing.
+            "resume": "" if is_foreground or not entry["id"] else entry["id"],
             "tag": tag,
             "color": color,
             "agent": agent_type,
@@ -256,7 +266,7 @@ for row in rendered:
         suffix += "  (" + row["branch"] + ")"
 
     print(delim.join([
-        row["pane"], row["window"], row["tmux_session"],
+        row["pane"], row["window"], row["tmux_session"], row["resume"],
         entry + "  " + dim + suffix + reset,
     ]))
 '
@@ -286,8 +296,8 @@ selection=$(
         fzf \
             --ansi \
             --delimiter='\t' \
-            --with-nth=4.. \
-            --accept-nth=1,2,3 \
+            --with-nth=5.. \
+            --accept-nth=1,2,3,4 \
             --tiebreak=index \
             --cycle \
             --layout=reverse \
@@ -307,7 +317,7 @@ selection=$(
             --bind='q:abort'
 ) || exit 0
 
-IFS="$delimiter" read -r pane_id window_id session_id _ <<EOF
+IFS="$delimiter" read -r pane_id window_id session_id resume_id _ <<EOF
 $selection
 EOF
 
@@ -316,3 +326,17 @@ EOF
 tmux select-window -t "$window_id"
 tmux select-pane -t "$pane_id"
 tmux switch-client -t "$session_id"
+
+# Landing on the pane is only half of it when the chosen session is one of the
+# others its process is holding; Copilot still has to be told to switch.
+[ -n "$resume_id" ] || exit 0
+
+if [ -n "$(composer_text "$pane_id")" ]; then
+    tmux display-message "agent-finder: composer busy, run /resume $resume_id yourself"
+    exit 0
+fi
+
+tmux send-keys -t "$pane_id" "/resume $resume_id"
+# The slash command menu eats an Enter arriving in the same burst as the text.
+sleep 0.4
+tmux send-keys -t "$pane_id" Enter

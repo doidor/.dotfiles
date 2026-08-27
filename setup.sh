@@ -226,7 +226,9 @@ install_fonts() {
 install_shell_enhancements() {
     print_header "Installing shell enhancements..."
 
-    local tools=("zoxide" "direnv" "lazygit")
+    # chafa renders images as sixel, which is the one graphics protocol tmux
+    # understands; see the note in tmux/.tmux.conf.
+    local tools=("zoxide" "direnv" "lazygit" "chafa")
 
     for tool in "${tools[@]}"; do
         if command_exists "$tool"; then

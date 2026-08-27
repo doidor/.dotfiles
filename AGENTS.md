@@ -55,7 +55,7 @@ The setup script automatically installs:
 - Homebrew (package manager)
 - Core tools: neovim, tmux, fzf, ripgrep, WezTerm
 - Shell: zsh, oh-my-zsh, zsh-autosuggestions, zsh-syntax-highlighting
-- Enhancements: zoxide, direnv, lazygit
+- Enhancements: zoxide, direnv, lazygit, chafa (sixel image viewer for tmux)
 - Developer CLIs: azure-cli (`az`), gh
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),

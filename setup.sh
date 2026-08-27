@@ -367,6 +367,26 @@ install_ai_tools() {
     else
         print_warning "npm not found; skipping GitHub Copilot CLI"
     fi
+
+    # ccmux - tracks every agent session running in tmux; prefix + O in
+    # .tmux.conf opens its picker. Its hooks live in ~/.copilot and
+    # ~/.config/opencode, outside this repo, so install them here too.
+    if command_exists ccmux; then
+        print_success "ccmux already installed"
+    elif brew install epilande/tap/ccmux; then
+        print_success "ccmux installed"
+    else
+        print_warning "ccmux failed to install; install it manually"
+    fi
+
+    if command_exists ccmux; then
+        # Only configures agents found on PATH, and is safe to re-run.
+        if ccmux setup >/dev/null 2>&1; then
+            print_success "ccmux agent hooks installed"
+        else
+            print_warning "ccmux hook setup failed; run 'ccmux setup' manually"
+        fi
+    fi
 }
 
 # Install macOS-specific tools

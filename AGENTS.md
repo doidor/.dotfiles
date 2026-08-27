@@ -55,7 +55,8 @@ The setup script automatically installs:
 - Enhancements: zoxide, direnv, lazygit
 - Developer CLIs: azure-cli (`az`), gh
 - Version managers: nvm, pyenv, bun
-- AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere)
+- AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),
+  ccmux (agent session tracker; `prefix + O` opens its picker)
 - Fonts: Hack Nerd Font, ProFont Nerd Font (required by WezTerm and Zed configs)
 - macOS apps: AeroSpace, Rectangle, Alt-Tab
 - macOS startup apps: 1Password, Cotypist, DisplayLink, Logitech G Hub, OpenIn

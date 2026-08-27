@@ -27,6 +27,37 @@ vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
 vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
 
+-- Oil buffers are named "oil:///real/path", so the directory is unwrapped
+-- instead of yanking the URL.
+local function buffer_path()
+  local name = vim.api.nvim_buf_get_name(0)
+  if name == "" then
+    return nil
+  end
+
+  local oil_dir = name:match("^oil://(.*)$")
+  if oil_dir then
+    return (oil_dir:gsub("(.)/$", "%1"))
+  end
+
+  return vim.fn.fnamemodify(name, ":p")
+end
+
+local function copy_path(mods)
+  local path = buffer_path()
+  if not path then
+    vim.notify("Buffer is not backed by a file", vim.log.levels.WARN)
+    return
+  end
+
+  path = vim.fn.fnamemodify(path, mods)
+  vim.fn.setreg("+", path)
+  vim.notify(path, vim.log.levels.INFO, { title = "Copied path" })
+end
+
+vim.keymap.set("n", "<leader>cp", function() copy_path(":p") end, { desc = "Copy absolute path" })
+vim.keymap.set("n", "<leader>cP", function() copy_path(":.") end, { desc = "Copy path relative to cwd" })
+
 if vim.g.neovide then
   vim.keymap.set('n', '<D-s>', ':w<CR>') -- Save
   vim.keymap.set('v', '<D-c>', '"+y') -- Copy

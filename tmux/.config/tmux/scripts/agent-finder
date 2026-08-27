@@ -35,6 +35,7 @@ rows=$(
         DELIM="$delimiter" DIM="$dim" RESET="$reset" python3 -c '
 import json
 import os
+import sqlite3
 import sys
 
 delim = os.environ["DELIM"]
@@ -57,13 +58,92 @@ for line in os.environ["TMUX_PANES"].splitlines():
 
 rank = {w: i for i, w in enumerate(os.environ["MRU"].split())}
 
+
+def copilot_titles(wanted):
+    """Session titles keyed by Copilot session id, plus the ids still open
+    grouped by directory. Copilot names a session from the conversation, which
+    says far more about it than the directory it happens to run in."""
+    home = os.path.expanduser("~")
+    titles, by_cwd = {}, {}
+
+    try:
+        with open(os.path.join(home, ".copilot/open-sessions-state.json")) as handle:
+            live = json.load(handle)
+    except (OSError, ValueError):
+        live = {}
+
+    # The store keeps every session ever run, so only the ids that can actually
+    # appear in the picker are looked up, each one a primary key hit.
+    lookup = sorted(set(wanted) | set(live))
+    if not lookup:
+        return titles, by_cwd
+
+    try:
+        db = os.path.join(home, ".copilot/session-store.db")
+        # Read-only so the picker can never disturb a running session.
+        conn = sqlite3.connect("file:%s?mode=ro" % db, uri=True)
+        placeholders = ",".join("?" * len(lookup))
+        rows = conn.execute(
+            "SELECT id, cwd, summary FROM sessions WHERE id IN (%s)" % placeholders,
+            lookup,
+        ).fetchall()
+        conn.close()
+    except sqlite3.Error:
+        return titles, by_cwd
+
+    for session_id, cwd, summary in rows:
+        summary = " ".join((summary or "").split())
+        if summary:
+            titles[session_id] = summary
+        if session_id in live and cwd:
+            by_cwd.setdefault(cwd, []).append(session_id)
+
+    # Most recently refreshed first, so the freshest session in a directory is
+    # the one a pane without a reported session id gets matched to.
+    for ids in by_cwd.values():
+        ids.sort(key=lambda i: live.get(i, {}).get("refreshedAt") or "", reverse=True)
+
+    return titles, by_cwd
+
+
+TITLES, OPEN_BY_CWD = copilot_titles(
+    [s.get("nativeSessionId") for s in sessions if s.get("nativeSessionId")]
+)
+claimed = set()
+
+
+def title_for(session):
+    if (session.get("agentType") or "").lower() != "copilot":
+        return ""
+
+    native = session.get("nativeSessionId")
+    if native:
+        claimed.add(native)
+        return TITLES.get(native, "")
+
+    # ccmux only learns the session id from a hook, so sessions that predate
+    # its install fall back to the open session running in the same directory.
+    for candidate in OPEN_BY_CWD.get(session.get("cwd") or "", []):
+        if candidate not in claimed and candidate in TITLES:
+            claimed.add(candidate)
+            return TITLES[candidate]
+
+    return ""
+
+
 RED = "\033[31m"
 YELLOW = "\033[33m"
 GREEN = "\033[32m"
+CYAN = "\033[36m"
 
 # Anything asking a question outranks work in flight, which outranks idle.
 PRIORITY = {"waiting": 0, "working": 1, "idle": 2}
 ATTENTION = {"permission": "PERM", "plan": "PLAN", "question": "ASK"}
+
+# Sessions reporting their own id claim a title first, so a pane falling back
+# to a directory match cannot take one that already belongs to another pane.
+for session in sorted(sessions, key=lambda s: 0 if s.get("nativeSessionId") else 1):
+    session["_title"] = title_for(session)
 
 rendered = []
 for index, session in enumerate(sessions):
@@ -99,10 +179,11 @@ for index, session in enumerate(sessions):
             last = prompts[-1]
             prompt = last.get("text") if isinstance(last, dict) else last
     prompt = " ".join((prompt or "").split())
-    if len(prompt) > 60:
-        prompt = prompt[:59] + "\u2026"
 
-    tool = session.get("pendingTool") or ""
+    title = session.get("_title") or ""
+    detail = title or prompt or session.get("pendingTool") or ""
+    if len(detail) > 60:
+        detail = detail[:59] + "\u2026"
 
     rendered.append({
         "sort": (
@@ -119,8 +200,8 @@ for index, session in enumerate(sessions):
         "agent": agent,
         "project": project,
         "branch": branch,
-        "prompt": prompt,
-        "tool": tool,
+        "detail": detail,
+        "titled": bool(title),
         "location": "%s: %s %s" % (session_name, window_index, window_name),
     })
 
@@ -139,9 +220,9 @@ for row in rendered:
         project_width, row["project"],
     )
 
-    detail = row["prompt"] or row["tool"]
-    if detail:
-        entry += "  " + detail
+    if row["detail"]:
+        # A named session reads as its title; anything else is just context.
+        entry += "  " + (CYAN + row["detail"] + reset if row["titled"] else row["detail"])
 
     suffix = row["location"]
     if row["branch"]:

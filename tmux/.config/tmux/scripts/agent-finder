@@ -4,8 +4,9 @@ set -eu
 
 # Fuzzy finder for the AI agent sessions ccmux tracks, deliberately built to
 # behave like the window finder next to it: same vim-style modes, same preview,
-# same keys. Rows are ordered by which agent wants attention first, then by the
-# window finder's own MRU list so the two pickers agree on what "recent" means.
+# same keys, and the same MRU order so both agree on what "recent" means.
+# A Copilot process can hold several sessions at once, so each one gets its own
+# row and the pane's foreground session is marked.
 
 mru_option='@window-finder-mru'
 
@@ -33,22 +34,32 @@ mru=$(tmux show-option -gqv "$mru_option" || printf '')
 rows=$(
     CCMUX_JSON="$sessions_json" TMUX_PANES="$panes" MRU="$mru" \
         DELIM="$delimiter" DIM="$dim" RESET="$reset" python3 -c '
+import glob
 import json
 import os
 import sqlite3
 import sys
 
+HOME = os.path.expanduser("~")
 delim = os.environ["DELIM"]
 dim = os.environ["DIM"]
 reset = os.environ["RESET"]
 
-try:
-    sessions = json.loads(os.environ["CCMUX_JSON"] or "[]")
-except ValueError:
-    sessions = []
+RED = "\033[31m"
+YELLOW = "\033[33m"
+GREEN = "\033[32m"
+CYAN = "\033[36m"
 
-if not isinstance(sessions, list):
-    sessions = []
+# Anything asking a question outranks work in flight, which outranks idle.
+ATTENTION = {"permission": "PERM", "plan": "PLAN", "question": "ASK"}
+
+try:
+    agents = json.loads(os.environ["CCMUX_JSON"] or "[]")
+except ValueError:
+    agents = []
+
+if not isinstance(agents, list):
+    agents = []
 
 panes = {}
 for line in os.environ["TMUX_PANES"].splitlines():
@@ -59,151 +70,164 @@ for line in os.environ["TMUX_PANES"].splitlines():
 rank = {w: i for i, w in enumerate(os.environ["MRU"].split())}
 
 
-def copilot_titles(wanted):
-    """Session titles keyed by Copilot session id, plus the ids still open
-    grouped by directory. Copilot names a session from the conversation, which
-    says far more about it than the directory it happens to run in."""
-    home = os.path.expanduser("~")
-    titles, by_cwd = {}, {}
-
+def open_copilot_sessions():
+    """Copilot sessions that are still open, grouped by the process holding
+    them. One Copilot process can carry several sessions at once, and only the
+    lock file it writes says which process a session belongs to."""
     try:
-        with open(os.path.join(home, ".copilot/open-sessions-state.json")) as handle:
+        with open(os.path.join(HOME, ".copilot/open-sessions-state.json")) as handle:
             live = json.load(handle)
     except (OSError, ValueError):
-        live = {}
+        return {}
 
-    # The store keeps every session ever run, so only the ids that can actually
-    # appear in the picker are looked up, each one a primary key hit.
-    lookup = sorted(set(wanted) | set(live))
+    by_pid = {}
+    for session_id, state in live.items():
+        locks = glob.glob(
+            os.path.join(HOME, ".copilot/session-state", session_id, "inuse.*.lock")
+        )
+        if not locks:
+            continue
+        try:
+            pid = int(os.path.basename(locks[0]).split(".")[1])
+        except (IndexError, ValueError):
+            continue
+
+        by_pid.setdefault(pid, []).append({
+            "id": session_id,
+            "working": bool(state.get("working")),
+            "refreshed": state.get("refreshedAt") or "",
+        })
+
+    for entries in by_pid.values():
+        entries.sort(key=lambda e: e["refreshed"], reverse=True)
+
+    return by_pid
+
+
+def copilot_titles(wanted):
+    """Session titles keyed by session id. Copilot names a session from the
+    conversation, which says far more about it than the directory it runs in."""
+    lookup = sorted({w for w in wanted if w})
     if not lookup:
-        return titles, by_cwd
+        return {}
 
+    titles = {}
     try:
-        db = os.path.join(home, ".copilot/session-store.db")
+        db = os.path.join(HOME, ".copilot/session-store.db")
         # Read-only so the picker can never disturb a running session.
         conn = sqlite3.connect("file:%s?mode=ro" % db, uri=True)
         placeholders = ",".join("?" * len(lookup))
         rows = conn.execute(
-            "SELECT id, cwd, summary FROM sessions WHERE id IN (%s)" % placeholders,
+            "SELECT id, summary FROM sessions WHERE id IN (%s)" % placeholders,
             lookup,
         ).fetchall()
         conn.close()
     except sqlite3.Error:
-        return titles, by_cwd
+        return titles
 
-    for session_id, cwd, summary in rows:
+    for session_id, summary in rows:
         summary = " ".join((summary or "").split())
         if summary:
             titles[session_id] = summary
-        if session_id in live and cwd:
-            by_cwd.setdefault(cwd, []).append(session_id)
 
-    # Most recently refreshed first, so the freshest session in a directory is
-    # the one a pane without a reported session id gets matched to.
-    for ids in by_cwd.values():
-        ids.sort(key=lambda i: live.get(i, {}).get("refreshedAt") or "", reverse=True)
-
-    return titles, by_cwd
+    return titles
 
 
-TITLES, OPEN_BY_CWD = copilot_titles(
-    [s.get("nativeSessionId") for s in sessions if s.get("nativeSessionId")]
-)
-claimed = set()
+def last_prompt(agent):
+    prompt = agent.get("lastPrompt")
+    if isinstance(prompt, dict):
+        prompt = prompt.get("text")
+    if not prompt:
+        prompts = agent.get("prompts") or []
+        if prompts:
+            last = prompts[-1]
+            prompt = last.get("text") if isinstance(last, dict) else last
+    return " ".join((prompt or "").split())
 
 
-def title_for(session):
-    if (session.get("agentType") or "").lower() != "copilot":
-        return ""
+OPEN_BY_PID = open_copilot_sessions()
 
-    native = session.get("nativeSessionId")
-    if native:
-        claimed.add(native)
-        return TITLES.get(native, "")
-
-    # ccmux only learns the session id from a hook, so sessions that predate
-    # its install fall back to the open session running in the same directory.
-    for candidate in OPEN_BY_CWD.get(session.get("cwd") or "", []):
-        if candidate not in claimed and candidate in TITLES:
-            claimed.add(candidate)
-            return TITLES[candidate]
-
-    return ""
-
-
-RED = "\033[31m"
-YELLOW = "\033[33m"
-GREEN = "\033[32m"
-CYAN = "\033[36m"
-
-# Anything asking a question outranks work in flight, which outranks idle.
-PRIORITY = {"waiting": 0, "working": 1, "idle": 2}
-ATTENTION = {"permission": "PERM", "plan": "PLAN", "question": "ASK"}
-
-# Sessions reporting their own id claim a title first, so a pane falling back
-# to a directory match cannot take one that already belongs to another pane.
-for session in sorted(sessions, key=lambda s: 0 if s.get("nativeSessionId") else 1):
-    session["_title"] = title_for(session)
+wanted = [a.get("nativeSessionId") for a in agents]
+for entries in OPEN_BY_PID.values():
+    wanted.extend(e["id"] for e in entries)
+TITLES = copilot_titles(wanted)
 
 rendered = []
-for index, session in enumerate(sessions):
-    pane_id = session.get("tmuxPane") or ""
+for index, agent in enumerate(agents):
+    pane_id = agent.get("tmuxPane") or ""
     pane = panes.get(pane_id)
     if not pane:
         continue
 
-    window_id, session_id, session_name, window_index, window_name = pane
-    status = (session.get("status") or "idle").lower()
-    attention = (session.get("attentionType") or "").lower()
+    window_id, tmux_session, session_name, window_index, window_name = pane
+    status = (agent.get("status") or "idle").lower()
+    attention = (agent.get("attentionType") or "").lower()
+    agent_type = agent.get("agentType") or "agent"
+    project = agent.get("project") or "?"
+    branch = agent.get("gitBranch") or ""
+    prompt = last_prompt(agent)
 
-    if status == "waiting":
-        tag = ATTENTION.get(attention, "WAIT")
-        color = RED
-    elif status == "working":
-        tag = "BUSY"
-        color = YELLOW
+    # The session ccmux reports is the one in the foreground of that pane.
+    foreground = agent.get("nativeSessionId")
+    hosted = OPEN_BY_PID.get(agent.get("pid")) if agent_type.lower() == "copilot" else None
+    if hosted and not foreground:
+        foreground = hosted[0]["id"]
+
+    if hosted:
+        entries = hosted
     else:
-        tag = "IDLE"
-        color = GREEN
+        # Nothing reports sessions for this agent, so the pane is the session.
+        entries = [{
+            "id": foreground,
+            "working": status == "working",
+            "refreshed": "",
+            "solo": True,
+        }]
 
-    agent = session.get("agentType") or "agent"
-    project = session.get("project") or "?"
-    branch = session.get("gitBranch") or ""
+    for slot, entry in enumerate(entries):
+        is_foreground = entry.get("solo") or (
+            entry["id"] is not None and entry["id"] == foreground
+        )
 
-    prompt = session.get("lastPrompt")
-    if isinstance(prompt, dict):
-        prompt = prompt.get("text")
-    if not prompt:
-        prompts = session.get("prompts") or []
-        if prompts:
-            last = prompts[-1]
-            prompt = last.get("text") if isinstance(last, dict) else last
-    prompt = " ".join((prompt or "").split())
+        # Only the foreground session can be the one blocked on a prompt, so
+        # the pane-wide attention state belongs to it alone.
+        if is_foreground and status == "waiting":
+            tag, color = ATTENTION.get(attention, "WAIT"), RED
+        elif entry["working"] or (is_foreground and status == "working"):
+            tag, color = "BUSY", YELLOW
+        else:
+            tag, color = "IDLE", GREEN
 
-    title = session.get("_title") or ""
-    detail = title or prompt or session.get("pendingTool") or ""
-    if len(detail) > 60:
-        detail = detail[:59] + "\u2026"
+        title = TITLES.get(entry["id"]) if entry["id"] else ""
+        detail = title or (prompt if is_foreground else "") or agent.get("pendingTool") or ""
+        if not detail and entry["id"]:
+            # Copilot has not named this one yet; its id is what /resume wants.
+            detail = entry["id"].split("-")[0]
+        if len(detail) > 58:
+            detail = detail[:57] + "\u2026"
 
-    rendered.append({
-        "sort": (
-            PRIORITY.get(status, 3),
-            rank.get(window_id, 1000000 + index),
-            index,
-        ),
-        "id": session.get("id") or "",
-        "pane": pane_id,
-        "window": window_id,
-        "session": session_id,
-        "tag": tag,
-        "color": color,
-        "agent": agent,
-        "project": project,
-        "branch": branch,
-        "detail": detail,
-        "titled": bool(title),
-        "location": "%s: %s %s" % (session_name, window_index, window_name),
-    })
+        rendered.append({
+            # Windows are ordered by when they were last visited, then the
+            # foreground session leads the others sharing its process.
+            "sort": (
+                rank.get(window_id, 1000000 + index),
+                0 if is_foreground else 1,
+                -slot,
+                index,
+            ),
+            "pane": pane_id,
+            "window": window_id,
+            "tmux_session": tmux_session,
+            "tag": tag,
+            "color": color,
+            "agent": agent_type,
+            "project": project,
+            "branch": branch,
+            "detail": detail,
+            "titled": bool(title),
+            "foreground": is_foreground,
+            "location": "%s: %s %s" % (session_name, window_index, window_name),
+        })
 
 rendered.sort(key=lambda row: row["sort"])
 
@@ -214,7 +238,10 @@ agent_width = max(len(row["agent"]) for row in rendered)
 project_width = max(len(row["project"]) for row in rendered)
 
 for row in rendered:
-    entry = "%s%-4s%s  %-*s  %-*s" % (
+    # A dot marks the session a pane is actually showing; the rest are open in
+    # the same process, reachable with /session once you are there.
+    entry = "%s %s%-4s%s  %-*s  %-*s" % (
+        "\u25cf" if row["foreground"] else " ",
         row["color"], row["tag"], reset,
         agent_width, row["agent"],
         project_width, row["project"],
@@ -229,7 +256,7 @@ for row in rendered:
         suffix += "  (" + row["branch"] + ")"
 
     print(delim.join([
-        row["id"], row["pane"], row["window"], row["session"],
+        row["pane"], row["window"], row["tmux_session"],
         entry + "  " + dim + suffix + reset,
     ]))
 '
@@ -240,7 +267,7 @@ if [ -z "$rows" ]; then
     exit 0
 fi
 
-preview='tmux display-message -p -t {2} "#{session_name} → #{window_name}   #{pane_current_path}" && tmux capture-pane -p -e -t {2}'
+preview='tmux display-message -p -t {1} "#{session_name} → #{window_name}   #{pane_current_path}" && tmux capture-pane -p -e -t {1}'
 
 # Vim-style modes. The navigation keys stay unbound while searching so that
 # they type normally, and are only rebound once Esc switches to normal mode.
@@ -259,8 +286,8 @@ selection=$(
         fzf \
             --ansi \
             --delimiter='\t' \
-            --with-nth=5.. \
-            --accept-nth=2,3,4 \
+            --with-nth=4.. \
+            --accept-nth=1,2,3 \
             --tiebreak=index \
             --cycle \
             --layout=reverse \

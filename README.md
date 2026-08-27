@@ -50,6 +50,7 @@ The dotfiles include availability checks, so missing optional tools won't cause 
 - [WezTerm](https://wezfurlong.org/wezterm/) - Terminal emulator (configured to launch tmux)
 - [fzf](https://github.com/junegunn/fzf) - Fuzzy finder for command history and files
 - [ripgrep](https://github.com/BurntSushi/ripgrep) - Fast text search (rg command)
+- [tree-sitter-cli](https://github.com/tree-sitter/tree-sitter) - Builds the parsers nvim-treesitter installs
 
 #### Shell Enhancements (Optional)
 

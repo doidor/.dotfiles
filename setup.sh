@@ -172,14 +172,27 @@ install_omz_plugins() {
 install_core_tools() {
     print_header "Installing core development tools..."
 
-    local tools=("neovim" "tmux" "fzf" "ripgrep")
+    # Entries are "formula|command it provides". nvim-treesitter's `main` branch
+    # shells out to the tree-sitter CLI to build parsers, and that formula
+    # installs as `tree-sitter` (the `tree-sitter` formula is the library only).
+    local tools=(
+        "neovim|nvim"
+        "tmux|tmux"
+        "fzf|fzf"
+        "ripgrep|rg"
+        "tree-sitter-cli|tree-sitter"
+    )
 
-    for tool in "${tools[@]}"; do
-        if command_exists "$tool"; then
-            print_success "$tool already installed"
+    for entry in "${tools[@]}"; do
+        local formula="${entry%%|*}"
+        local cmd="${entry##*|}"
+
+        if command_exists "$cmd"; then
+            print_success "$formula already installed"
+        elif brew install "$formula"; then
+            print_success "$formula installed"
         else
-            brew install "$tool"
-            print_success "$tool installed"
+            print_warning "$formula failed to install; install it manually"
         fi
     done
 

@@ -53,7 +53,8 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 
 The setup script automatically installs:
 - Homebrew (package manager)
-- Core tools: neovim, tmux, fzf, ripgrep, WezTerm
+- Core tools: neovim, tmux, fzf, ripgrep, tree-sitter-cli (builds nvim-treesitter
+  parsers), WezTerm
 - Shell: zsh, oh-my-zsh, zsh-autosuggestions, zsh-syntax-highlighting
 - Enhancements: zoxide, direnv, lazygit, chafa (sixel image viewer for tmux)
 - Developer CLIs: azure-cli (`az`), gh

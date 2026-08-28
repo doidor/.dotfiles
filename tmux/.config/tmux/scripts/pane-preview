@@ -1,0 +1,87 @@
+#!/bin/sh
+
+set -eu
+
+if [ "$#" -ne 1 ]; then
+    printf 'usage: pane-preview <pane-id>\n' >&2
+    exit 2
+fi
+
+PANE_TARGET=$1
+export PANE_TARGET
+
+exec python3 -c '
+import os
+import re
+import subprocess
+
+target = os.environ["PANE_TARGET"]
+ansi = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+decoration = frozenset("╻╹▄▀─━═")
+
+
+def tmux(*args):
+    return subprocess.run(
+        ["tmux", *args],
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    ).stdout
+
+
+def visible_prefix(line, length):
+    """Keep ANSI styling while trimming by visible character count."""
+    output = []
+    index = 0
+    visible = 0
+
+    while index < len(line) and visible < length:
+        match = ansi.match(line, index)
+        if match:
+            output.append(match.group())
+            index = match.end()
+        else:
+            output.append(line[index])
+            index += 1
+            visible += 1
+
+    if output:
+        output.append("\x1b[0m")
+    return "".join(output)
+
+
+heading = tmux(
+    "display-message",
+    "-p",
+    "-t",
+    target,
+    "#{session_name} → #{window_name}   #{pane_current_path}",
+).rstrip()
+capture = tmux("capture-pane", "-p", "-e", "-t", target)
+
+print(heading)
+print()
+
+previous_blank = True
+for raw in capture.splitlines():
+    plain = ansi.sub("", raw).rstrip()
+
+    # Full-screen TUIs draw a rail at their source width. In a narrower fzf
+    # preview, its padding wraps and turns that rail into a line through the
+    # content, so remove both before fzf performs word wrapping.
+    if plain.endswith("┃"):
+        plain = plain[:-1].rstrip()
+
+    # Composer borders and horizontal rules carry no useful preview content.
+    if len(plain) > 20 and set(plain.strip()) <= decoration:
+        plain = ""
+
+    if not plain:
+        if not previous_blank:
+            print()
+        previous_blank = True
+        continue
+
+    print(visible_prefix(raw, len(plain)))
+    previous_blank = False
+'

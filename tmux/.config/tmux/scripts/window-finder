@@ -119,7 +119,7 @@ dim="${escape}[2m"
 reset="${escape}[0m"
 tmux_format="#{session_id}${delimiter}#{session_name}${delimiter}#{window_id}${delimiter}#{window_index}${delimiter}#{window_name}${delimiter}#{window_flags}${delimiter}#{window_panes}"
 mru=$(tmux show-option -gqv "$mru_option")
-preview='tmux display-message -p -t {2} "#{session_name} → #{window_name}   #{pane_current_path}" && tmux capture-pane -p -e -t {2}'
+preview="$HOME/.config/tmux/scripts/pane-preview {2}"
 
 # Vim-style modes. The navigation keys stay unbound while searching so that
 # they type normally, and are only rebound once Esc switches to normal mode.
@@ -188,7 +188,7 @@ selection=$(
             --layout=reverse \
             --border \
             --preview="$preview" \
-            --preview-window='right,50%,border-left,wrap' \
+            --preview-window='right,65%,border-left,wrap,wrap-word,follow,~2,<120(down,60%,border-top,wrap,wrap-word,follow,~2)' \
             --prompt="$search_prompt" \
             --header="$search_header" \
             --bind='ctrl-p:toggle-preview' \

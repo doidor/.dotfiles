@@ -129,18 +129,6 @@ def copilot_titles(wanted):
     return titles
 
 
-def last_prompt(agent):
-    prompt = agent.get("lastPrompt")
-    if isinstance(prompt, dict):
-        prompt = prompt.get("text")
-    if not prompt:
-        prompts = agent.get("prompts") or []
-        if prompts:
-            last = prompts[-1]
-            prompt = last.get("text") if isinstance(last, dict) else last
-    return " ".join((prompt or "").split())
-
-
 BY_PID = session_by_pid()
 
 
@@ -161,7 +149,7 @@ for index, agent in enumerate(agents):
     if not pane:
         continue
 
-    window_id, tmux_session, session_name, window_index, window_name = pane
+    window_id, tmux_session, session_name, _, window_name = pane
     status = (agent.get("status") or "idle").lower()
 
     if status == "waiting":
@@ -174,12 +162,10 @@ for index, agent in enumerate(agents):
 
     session_id = session_of(agent)
     title = TITLES.get(session_id, "") if session_id else ""
-    detail = title or last_prompt(agent) or agent.get("pendingTool") or ""
-    if not detail and session_id:
-        # Copilot has not named this one yet; its id is what /resume wants.
-        detail = session_id.split("-")[0]
-    if len(detail) > 60:
-        detail = detail[:59] + "\u2026"
+    title_style = CYAN if title else dim
+    title = title or "Untitled session"
+    if len(title) > 60:
+        title = title[:59] + "\u2026"
 
     rendered.append({
         # Ordered by when each window was last visited, matching the window
@@ -190,12 +176,9 @@ for index, agent in enumerate(agents):
         "tmux_session": tmux_session,
         "tag": tag,
         "color": color,
-        "agent": agent.get("agentType") or "agent",
-        "project": agent.get("project") or "?",
-        "branch": agent.get("gitBranch") or "",
-        "detail": detail,
-        "titled": bool(title),
-        "location": "%s: %s %s" % (session_name, window_index, window_name),
+        "title": title,
+        "title_style": title_style,
+        "location": "%s > %s" % (session_name, window_name),
     })
 
 rendered.sort(key=lambda row: row["sort"])
@@ -203,27 +186,18 @@ rendered.sort(key=lambda row: row["sort"])
 if not rendered:
     sys.exit(0)
 
-agent_width = max(len(row["agent"]) for row in rendered)
-project_width = max(len(row["project"]) for row in rendered)
+location_width = max(len(row["location"]) for row in rendered)
 
 for row in rendered:
-    entry = "%s%-4s%s  %-*s  %-*s" % (
+    entry = "%s%-4s%s  %s%-*s%s  %s%s%s" % (
         row["color"], row["tag"], reset,
-        agent_width, row["agent"],
-        project_width, row["project"],
+        dim, location_width, row["location"], reset,
+        row["title_style"], row["title"], reset,
     )
-
-    if row["detail"]:
-        # A named session reads as its title; anything else is just context.
-        entry += "  " + (CYAN + row["detail"] + reset if row["titled"] else row["detail"])
-
-    suffix = row["location"]
-    if row["branch"]:
-        suffix += "  (" + row["branch"] + ")"
 
     print(delim.join([
         row["pane"], row["window"], row["tmux_session"],
-        entry + "  " + dim + suffix + reset,
+        entry,
     ]))
 '
 )
@@ -233,7 +207,7 @@ if [ -z "$rows" ]; then
     exit 0
 fi
 
-preview='tmux display-message -p -t {1} "#{session_name} → #{window_name}   #{pane_current_path}" && tmux capture-pane -p -e -t {1}'
+preview="$HOME/.config/tmux/scripts/pane-preview {1}"
 
 # Vim-style modes. The navigation keys stay unbound while searching so that
 # they type normally, and are only rebound once Esc switches to normal mode.
@@ -259,7 +233,7 @@ selection=$(
             --layout=reverse \
             --border \
             --preview="$preview" \
-            --preview-window='right,50%,border-left,wrap' \
+            --preview-window='right,65%,border-left,wrap,wrap-word,follow,~2,<120(down,60%,border-top,wrap,wrap-word,follow,~2)' \
             --prompt="$search_prompt" \
             --header="$search_header" \
             --bind='ctrl-p:toggle-preview' \

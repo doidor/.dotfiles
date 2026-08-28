@@ -536,11 +536,32 @@ install_tpm() {
 stow_dotfiles() {
     print_header "Stowing dotfiles..."
 
-    cd "$(dirname "$0")"
+    cd "$(dirname "$0")" || {
+        print_error "Could not enter the dotfiles directory"
+        return 1
+    }
+
+    # If this script is sourced rather than executed, $0 is the shell, so
+    # dirname gives "." and the cd above is a no-op. The loop below would then
+    # treat every directory in the current folder as a stow package, which in
+    # $HOME means trying to stow Library, Documents and friends and failing on
+    # permissions. Refuse instead of producing a confusing error.
+    if [ ! -f setup.sh ] || [ ! -d nvim ]; then
+        print_error "$(pwd -P) does not look like the dotfiles repository."
+        print_error "Run the script directly, for example ~/.dotfiles/setup.sh,"
+        print_error "rather than sourcing it with . or source."
+        return 1
+    fi
+
+    # Physical path of this repository, used below to tell a genuine conflict
+    # apart from a file this repository already owns.
+    local repo_root
+    repo_root="$(pwd -P)"
 
     # Backup existing dotfiles that might conflict
     backup_dir="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
     local needs_backup=false
+    local stow_failed=false
 
     for folder in */; do
         folder="${folder%/}"
@@ -558,22 +579,48 @@ stow_dotfiles() {
         # dotfiles.
         while IFS= read -r rel; do
             local target="$HOME/$rel"
-            if [ -e "$target" ] && [ ! -L "$target" ]; then
-                if [ "$needs_backup" = false ]; then
-                    mkdir -p "$backup_dir"
-                    print_warning "Backing up conflicting files to $backup_dir"
-                    needs_backup=true
-                fi
-                mkdir -p "$backup_dir/$(dirname "$rel")"
-                mv "$target" "$backup_dir/$rel"
-                echo "  Backed up $rel"
+            [ -e "$target" ] || continue
+            [ -L "$target" ] && continue
+
+            # A file can be non-symlink and still already be ours, because stow
+            # links directories when it can: ~/.config/nvim is the symlink, so
+            # ~/.config/nvim/init.lua looks like a plain file even though it
+            # lives in this repository. Resolving the parent catches that.
+            # Without this, a second run moves the repository's own files into
+            # the backup directory and empties the packages.
+            local resolved
+            resolved="$(cd "$(dirname "$target")" 2>/dev/null && pwd -P)" || continue
+            case "$resolved/" in
+                "$repo_root"/*) continue ;;
+            esac
+
+            if [ "$needs_backup" = false ]; then
+                mkdir -p "$backup_dir"
+                print_warning "Backing up conflicting files to $backup_dir"
+                needs_backup=true
             fi
+            mkdir -p "$backup_dir/$(dirname "$rel")"
+            mv "$target" "$backup_dir/$rel"
+            echo "  Backed up $rel"
         done < <(find "$folder" -type f | sed "s|^$folder/||")
 
         echo "  Stowing $folder..."
         stow -D -t ~ "$folder" 2>/dev/null || true
-        stow -t ~ "$folder"
+        # Keep going on failure rather than letting `set -e` kill the whole run
+        # part way through, so one bad package cannot leave the rest unstowed.
+        if ! stow -t ~ "$folder"; then
+            print_error "Failed to stow $folder"
+            stow_failed=true
+        fi
     done
+
+    if [ "$stow_failed" = true ]; then
+        print_error "Some packages did not stow. Common causes:"
+        print_error "  - ~/.dotfiles owned by root, usually from running this with sudo."
+        print_error "    Fix with: sudo chown -R \"\$(id -un)\" \"$repo_root\""
+        print_error "  - a target under \$HOME that is not writable by you."
+        return 1
+    fi
 
     print_success "Dotfiles stowed"
 

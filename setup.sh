@@ -159,11 +159,27 @@ install_omz_plugins() {
         print_success "zsh-syntax-highlighting installed"
     fi
 
-    # zsh-dircolors-solarized
-    if [ -d "$plugin_dir/zsh-dircolors-solarized" ]; then
+    # zsh-dircolors-solarized.
+    #
+    # This must be joel-porquet's repository, not seebi's. seebi/dircolors-solarized
+    # is a collection of LS_COLORS theme files with no .plugin.zsh entry point, so
+    # oh-my-zsh clones it happily and then reports "plugin zsh-dircolors-solarized
+    # not found" on every shell start. joel-porquet's is the actual zsh plugin, and
+    # it carries seebi's repository as a submodule, which holds the theme files
+    # `setupsolarized` reads, hence --recurse-submodules.
+    if [ -f "$plugin_dir/zsh-dircolors-solarized/zsh-dircolors-solarized.plugin.zsh" ]; then
         print_success "zsh-dircolors-solarized already installed"
     else
-        git clone https://github.com/seebi/dircolors-solarized.git "$plugin_dir/zsh-dircolors-solarized"
+        # Existing directories are replaced rather than skipped, so a machine
+        # that already cloned seebi's repository is repaired instead of being
+        # left broken by the plain directory check the other plugins use.
+        if [ -d "$plugin_dir/zsh-dircolors-solarized" ]; then
+            print_warning "Replacing zsh-dircolors-solarized: no plugin entry point found"
+            rm -rf "$plugin_dir/zsh-dircolors-solarized"
+        fi
+        git clone --recurse-submodules \
+            https://github.com/joel-porquet/zsh-dircolors-solarized.git \
+            "$plugin_dir/zsh-dircolors-solarized"
         print_success "zsh-dircolors-solarized installed"
     fi
 }

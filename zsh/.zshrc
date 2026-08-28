@@ -217,3 +217,6 @@ if [[ ":${PATH}:" != *":/Users/doidor/.claude-cli/CurrentVersion:"* ]]; then
     export PATH="/Users/doidor/.claude-cli/CurrentVersion:${PATH}"
 fi
 # END claude-cli MANAGED BLOCK
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

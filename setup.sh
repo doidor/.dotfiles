@@ -562,6 +562,7 @@ stow_dotfiles() {
     backup_dir="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
     local needs_backup=false
     local stow_failed=false
+    local failed_folders=()
 
     for folder in */; do
         folder="${folder%/}"
@@ -611,14 +612,39 @@ stow_dotfiles() {
         if ! stow -t ~ "$folder"; then
             print_error "Failed to stow $folder"
             stow_failed=true
+            failed_folders+=("$folder")
         fi
     done
 
     if [ "$stow_failed" = true ]; then
-        print_error "Some packages did not stow. Common causes:"
-        print_error "  - ~/.dotfiles owned by root, usually from running this with sudo."
-        print_error "    Fix with: sudo chown -R \"\$(id -un)\" \"$repo_root\""
-        print_error "  - a target under \$HOME that is not writable by you."
+        # stow says "permission denied" without naming the directory it could
+        # not write to, which makes this painful to diagnose by hand. Print the
+        # ownership of every directory the failed packages actually needed.
+        print_error "Failed to stow: ${failed_folders[*]}"
+        echo
+        print_error "Ownership of the paths involved, running as $(id -un):"
+        {
+            local f d p
+            for p in "$HOME" "$repo_root"; do
+                printf '%s\n' "$p"
+            done
+            for f in "${failed_folders[@]}"; do
+                while IFS= read -r d; do
+                    [ -e "$HOME/$d" ] && printf '%s\n' "$HOME/$d"
+                done < <(find "$f" -mindepth 1 -type d | sed "s|^$f/||")
+            done
+        } | sort -u | while IFS= read -r p; do
+            if [ -w "$p" ]; then
+                printf '    %s\n' "$(ls -ld "$p" 2>&1)"
+            else
+                printf '    %s   <-- NOT WRITABLE BY YOU\n' "$(ls -ld "$p" 2>&1)"
+            fi
+        done
+        echo
+        print_error "A directory owned by root is the usual cause, normally left"
+        print_error "behind by an installer run with sudo. Fix whichever path"
+        print_error "above is not yours, then re-run:"
+        print_error "  sudo chown -R \"\$(id -un)\" <path>"
         return 1
     fi
 

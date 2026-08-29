@@ -29,9 +29,9 @@
 	helper = /usr/local/share/gcm-core/git-credential-manager
 [credential "https://dev.azure.com"]
 	useHttpPath = true
-[credential "azrepos:org/1esgitops"]
-	username = popatudor@microsoft.com
 [credential "azrepos:org/msasg"]
 	username = popatudor@microsoft.com
 [credential "https://msft.ghe.com"]
 	provider = github
+[credential "azrepos:org/1esgitops"]
+	username = popatudor@microsoft.com

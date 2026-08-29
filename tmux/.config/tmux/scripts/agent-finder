@@ -24,19 +24,19 @@ escape=$(printf '\033')
 dim="${escape}[2m"
 reset="${escape}[0m"
 
-sessions_json=$(ccmux show --json 2>/dev/null || printf '[]')
+render_rows() {
+    sessions_json=$(ccmux show --json 2>/dev/null || printf '[]')
+    # tmux owns the pane -> window mapping that ccmux has no reason to know about.
+    panes=$(tmux list-panes -a -F "#{pane_id}${delimiter}#{window_id}${delimiter}#{session_id}${delimiter}#{session_name}${delimiter}#{window_index}${delimiter}#{window_name}")
+    mru=$(tmux show-option -gqv "$mru_option" || printf '')
 
-# tmux owns the pane -> window mapping that ccmux has no reason to know about.
-panes=$(tmux list-panes -a -F "#{pane_id}${delimiter}#{window_id}${delimiter}#{session_id}${delimiter}#{session_name}${delimiter}#{window_index}${delimiter}#{window_name}")
-mru=$(tmux show-option -gqv "$mru_option" || printf '')
-
-rows=$(
     CCMUX_JSON="$sessions_json" TMUX_PANES="$panes" MRU="$mru" \
         DELIM="$delimiter" DIM="$dim" RESET="$reset" python3 -c '
 import glob
 import json
 import os
 import sqlite3
+import subprocess
 import sys
 
 HOME = os.path.expanduser("~")
@@ -70,32 +70,19 @@ rank = {w: i for i, w in enumerate(os.environ["MRU"].split())}
 
 
 def session_by_pid():
-    """The Copilot session each process currently has open. A process can hold
-    more than one, so the most recently refreshed wins: that is the one its
-    window is showing."""
-    try:
-        with open(os.path.join(HOME, ".copilot/open-sessions-state.json")) as handle:
-            live = json.load(handle)
-    except (OSError, ValueError):
-        return {}
-
+    """Resolve the session actually held by each live Copilot process."""
     newest = {}
-    for session_id, state in live.items():
-        # The lock a running process writes is the only thing tying a session
-        # to it; sessions left behind in the state file have none.
-        locks = glob.glob(
-            os.path.join(HOME, ".copilot/session-state", session_id, "inuse.*.lock")
-        )
-        if not locks:
-            continue
+    pattern = os.path.join(HOME, ".copilot/session-state", "*", "inuse.*.lock")
+    for lock in glob.glob(pattern):
+        session_id = os.path.basename(os.path.dirname(lock))
         try:
-            pid = int(os.path.basename(locks[0]).split(".")[1])
-        except (IndexError, ValueError):
+            pid = int(os.path.basename(lock).split(".")[1])
+            modified = os.path.getmtime(lock)
+        except (IndexError, OSError, ValueError):
             continue
 
-        refreshed = state.get("refreshedAt") or ""
-        if refreshed >= newest.get(pid, ("", ""))[1]:
-            newest[pid] = (session_id, refreshed)
+        if modified >= newest.get(pid, ("", 0))[1]:
+            newest[pid] = (session_id, modified)
 
     return {pid: session for pid, (session, _) in newest.items()}
 
@@ -129,15 +116,87 @@ def copilot_titles(wanted):
     return titles
 
 
+def process_children():
+    """Child process ids keyed by parent process id."""
+    try:
+        result = subprocess.run(
+            ["ps", "-axo", "pid=,ppid=,state="],
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return {}
+
+    children = {}
+    for line in result.stdout.splitlines():
+        try:
+            pid, parent, state = line.split()
+            pid, parent = int(pid), int(parent)
+        except ValueError:
+            continue
+        if state.startswith("Z"):
+            continue
+        children.setdefault(parent, []).append(pid)
+    return children
+
+
+def has_descendants(pid):
+    """Whether a Copilot process still owns any tool subprocesses."""
+    try:
+        return bool(PROCESS_CHILDREN.get(int(pid)))
+    except (TypeError, ValueError):
+        return False
+
+
+def has_active_subagents(session_id):
+    """Whether a session has subagents without a terminal lifecycle event."""
+    if not session_id:
+        return False
+
+    path = os.path.join(HOME, ".copilot/session-state", session_id, "events.jsonl")
+    active = set()
+    try:
+        with open(path, "rb") as events:
+            for line in events:
+                if b"subagent." not in line:
+                    continue
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+
+                event_type = event.get("type")
+                data = event.get("data") or {}
+                agent_id = event.get("agentId") or data.get("agentId")
+                if not agent_id:
+                    continue
+
+                if event_type == "subagent.started":
+                    active.add(agent_id)
+                elif event_type in {
+                    "subagent.completed",
+                    "subagent.failed",
+                    "subagent.cancelled",
+                    "subagent.stopped",
+                }:
+                    active.discard(agent_id)
+    except OSError:
+        return False
+
+    return bool(active)
+
+
 BY_PID = session_by_pid()
+PROCESS_CHILDREN = process_children()
 
 
 def session_of(agent):
     if (agent.get("agentType") or "").lower() != "copilot":
         return None
-    # ccmux reports the id only for sessions started after its hooks were
-    # installed; the lock files cover the rest.
-    return agent.get("nativeSessionId") or BY_PID.get(agent.get("pid"))
+    # The process lock follows resumed sessions immediately; ccmux can retain
+    # the invocation id until its next reconciliation.
+    return BY_PID.get(agent.get("pid")) or agent.get("nativeSessionId")
 
 
 TITLES = copilot_titles(session_of(a) for a in agents)
@@ -152,15 +211,20 @@ for index, agent in enumerate(agents):
     window_id, tmux_session, session_name, _, window_name = pane
     status = (agent.get("status") or "idle").lower()
 
+    session_id = session_of(agent)
+    background_work = (
+        has_descendants(agent.get("pid"))
+        or has_active_subagents(session_id)
+    )
+
     if status == "waiting":
         tag = ATTENTION.get((agent.get("attentionType") or "").lower(), "WAIT")
         color = RED
-    elif status == "working":
+    elif status == "working" or background_work:
         tag, color = "BUSY", YELLOW
     else:
         tag, color = "IDLE", GREEN
 
-    session_id = session_of(agent)
     title = TITLES.get(session_id, "") if session_id else ""
     title_style = CYAN if title else dim
     title = title or "Untitled session"
@@ -200,7 +264,14 @@ for row in rendered:
         entry,
     ]))
 '
-)
+}
+
+if [ "${1:-}" = "rows" ]; then
+    render_rows
+    exit 0
+fi
+
+rows=$(render_rows)
 
 if [ -z "$rows" ]; then
     tmux display-message 'agent-finder: no agent sessions found'
@@ -208,6 +279,8 @@ if [ -z "$rows" ]; then
 fi
 
 preview="$HOME/.config/tmux/scripts/pane-preview {1}"
+# Status and generated titles can both change while the picker stays open.
+refresh="$HOME/.config/tmux/scripts/agent-finder rows"
 
 # Vim-style modes. The navigation keys stay unbound while searching so that
 # they type normally, and are only rebound once Esc switches to normal mode.
@@ -228,6 +301,8 @@ selection=$(
             --delimiter='\t' \
             --with-nth=4.. \
             --accept-nth=1,2,3 \
+            --id-nth=1 \
+            --track \
             --tiebreak=index \
             --cycle \
             --layout=reverse \
@@ -237,6 +312,7 @@ selection=$(
             --prompt="$search_prompt" \
             --header="$search_header" \
             --bind='ctrl-p:toggle-preview' \
+            --bind="every(5):reload($refresh)" \
             --bind="start:unbind($nav_keys)" \
             --bind="esc:$esc_action" \
             --bind="i:$search_mode" \

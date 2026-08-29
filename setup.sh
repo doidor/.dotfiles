@@ -548,6 +548,24 @@ install_tpm() {
     fi
 }
 
+# Install every plugin declared with @plugin after the tmux config is stowed.
+install_tmux_plugins() {
+    print_header "Installing tmux plugins..."
+
+    local installer="$HOME/.tmux/plugins/tpm/bin/install_plugins"
+    if [ ! -x "$installer" ]; then
+        print_error "TPM plugin installer not found at $installer"
+        return 1
+    fi
+
+    if "$installer"; then
+        print_success "tmux plugins installed"
+    else
+        print_error "Failed to install one or more tmux plugins"
+        return 1
+    fi
+}
+
 # Stow dotfiles
 stow_dotfiles() {
     print_header "Stowing dotfiles..."
@@ -694,6 +712,7 @@ main() {
     install_startup_apps
     install_tpm
     stow_dotfiles
+    install_tmux_plugins
 
     echo -e "\n${GREEN}╔════════════════════════════════════════╗"
     echo "║         Installation Complete!         ║"
@@ -712,4 +731,3 @@ main() {
 
 # Run main function
 main
-

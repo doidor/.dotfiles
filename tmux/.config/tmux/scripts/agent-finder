@@ -312,6 +312,7 @@ selection=$(
             --prompt="$search_prompt" \
             --header="$search_header" \
             --bind='ctrl-p:toggle-preview' \
+            --bind='change:first' \
             --bind="every(5):reload($refresh)" \
             --bind="start:unbind($nav_keys)" \
             --bind="esc:$esc_action" \

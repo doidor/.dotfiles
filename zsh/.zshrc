@@ -151,12 +151,10 @@ alias li="litra toggle"
 
 
 # Pyenv (Python Version Manager)
-if [ -d "$HOME/.pyenv" ]; then
-  export PYENV_ROOT="$HOME/.pyenv"
-  command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-  if command -v pyenv >/dev/null 2>&1; then
-    eval "$(pyenv init -)"
-  fi
+if command -v pyenv >/dev/null 2>&1 || [ -x "$HOME/.pyenv/bin/pyenv" ]; then
+  export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
+  [ -x "$PYENV_ROOT/bin/pyenv" ] && export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init - zsh)"
 fi
 
 # NVM (Node Version Manager)

@@ -349,8 +349,28 @@ install_languages() {
         fi
     fi
 
-    # Install Python3 (needed for Mason LSPs)
-    if command_exists python3; then
+    # Install Python through pyenv so both `python` and `python3` are available.
+    if command_exists pyenv; then
+        export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
+        eval "$(pyenv init - bash)"
+
+        if pyenv which python >/dev/null 2>&1 &&
+            pyenv exec python -c 'import sys; raise SystemExit(sys.version_info.major != 3)'; then
+            print_success "Python already available through pyenv ($(pyenv exec python --version))"
+        else
+            local python_version
+            python_version="$(pyenv latest 3 2>/dev/null || true)"
+            if [ -z "$python_version" ]; then
+                python_version="$(pyenv latest -k 3)"
+                print_header "Installing Python $python_version via pyenv..."
+                pyenv install --skip-existing "$python_version"
+            fi
+
+            pyenv global "$python_version"
+            pyenv rehash
+            print_success "Python $python_version configured as the pyenv global"
+        fi
+    elif command_exists python3; then
         print_success "Python3 already installed ($(python3 --version))"
     else
         print_header "Installing Python3..."

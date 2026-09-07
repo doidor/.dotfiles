@@ -35,8 +35,9 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 - All configurations are organized by tool in top-level directories
 - Each directory is structured for GNU Stow (files mirror home directory structure)
 - Neovim plugins are in `nvim/.config/nvim/lua/plugins/` as individual Lua files
-- tmux pickers live in `tmux/.config/tmux/scripts/` and share one fzf UX:
-  `prefix + w` finds windows, `prefix + O` finds agent sessions
+- tmux helpers live in `tmux/.config/tmux/scripts/`:
+  `prefix + w` opens the fzf window finder, `prefix + Ctrl+O` opens ccmux,
+  and `prefix + S` toggles its sidebar
 - The tmux status bar is hand-rolled in `.tmux.conf`, with no theme plugin. Keep
   it to BMP characters: Nerd Font icons above U+FFFF render as empty boxes in
   this WezTerm build. Box-drawing characters are safe, WezTerm draws those
@@ -65,7 +66,7 @@ The setup script automatically installs:
 - Developer CLIs: azure-cli (`az`), gh
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),
-  ccmux (agent session tracker; `prefix + O` opens its picker)
+  ccmux (agent session tracker; `prefix + Ctrl+O` opens its TUI)
 - Fonts: Hack Nerd Font, ProFont Nerd Font (required by WezTerm and Zed configs)
 - macOS apps: AeroSpace, Rectangle, Alt-Tab
 - macOS startup apps: 1Password, Cotypist, DisplayLink, Logitech G Hub, OpenIn

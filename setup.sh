@@ -419,7 +419,7 @@ install_ai_tools() {
         print_warning "npm not found; skipping GitHub Copilot CLI"
     fi
 
-    # ccmux - tracks every agent session running in tmux; prefix + O in
+    # ccmux - tracks every agent session running in tmux; prefix + Ctrl+O in
     # .tmux.conf opens its picker. Its hooks live in ~/.copilot and
     # ~/.config/opencode, outside this repo, so install them here too.
     if command_exists ccmux; then

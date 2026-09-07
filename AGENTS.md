@@ -62,7 +62,8 @@ The setup script automatically installs:
 - Core tools: neovim, tmux, fzf, ripgrep, tree-sitter-cli (builds nvim-treesitter
   parsers), WezTerm
 - Shell: zsh, oh-my-zsh, zsh-autosuggestions, zsh-syntax-highlighting
-- Enhancements: zoxide, direnv, lazygit, chafa (sixel image viewer for tmux)
+- Enhancements: zoxide, direnv, lazygit, hunk (diff review in ccmux), chafa
+  (sixel image viewer for tmux)
 - Developer CLIs: azure-cli (`az`), gh
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),

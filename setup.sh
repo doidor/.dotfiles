@@ -257,7 +257,7 @@ install_shell_enhancements() {
 
     # chafa renders images as sixel, which is the one graphics protocol tmux
     # understands; see the note in tmux/.tmux.conf.
-    local tools=("zoxide" "direnv" "lazygit" "chafa")
+    local tools=("zoxide" "direnv" "lazygit" "hunk" "chafa")
 
     for tool in "${tools[@]}"; do
         if command_exists "$tool"; then

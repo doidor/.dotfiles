@@ -57,6 +57,10 @@ The dotfiles include availability checks, so missing optional tools won't cause 
 - [zoxide](https://github.com/ajeetdsouza/zoxide) - Smart directory jumper (z command)
 - [direnv](https://direnv.net/) - Automatic environment variable loading per directory
 - [lazygit](https://github.com/jesseduffield/lazygit) - Terminal UI for git
+- [hunk](https://github.com/modem-dev/hunk) - Terminal diff review with comments for coding agents
+
+Open the full ccmux picker with `prefix + Ctrl+O`, select a session, and press
+`d` to review its working-tree diff in hunk. You can also run `hunk diff` directly.
 
 #### Version Managers (Optional)
 

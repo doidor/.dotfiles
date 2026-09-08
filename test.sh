@@ -25,10 +25,9 @@ command_exists() {
 # Test 1: Shell script syntax with shellcheck
 echo -e "${BLUE}→ Checking shell scripts...${NC}"
 if command_exists shellcheck; then
-    # The tmux scripts are globbed rather than listed, so a new one added to
-    # that directory is checked without having to be registered here too.
+    # Multiplexer scripts are globbed so new helpers are checked automatically.
     SHELL_SCRIPTS=("setup.sh" "bootstrap/install.sh")
-    for script in tmux/.config/tmux/scripts/*; do
+    for script in tmux/.config/tmux/scripts/* herdr/.config/herdr/scripts/*; do
         [ -f "$script" ] && SHELL_SCRIPTS+=("$script")
     done
     SHELL_OK=1
@@ -47,6 +46,21 @@ if command_exists shellcheck; then
     fi
 else
     echo -e "${YELLOW}⚠ shellcheck not installed, skipping shell script checks${NC}"
+    WARNINGS=$((WARNINGS + 1))
+fi
+echo
+
+# Herdr launcher behavior, without starting Herdr or an agent.
+echo -e "${BLUE}→ Checking Herdr launcher...${NC}"
+if command_exists python3; then
+    if python3 .github/tests/test_herdr_launcher.py; then
+        echo -e "${GREEN}✓ Herdr launcher behavior valid${NC}"
+    else
+        echo -e "${RED}✗ Herdr launcher has issues${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo -e "${YELLOW}⚠ python3 not installed, skipping Herdr launcher checks${NC}"
     WARNINGS=$((WARNINGS + 1))
 fi
 echo
@@ -115,29 +129,36 @@ else
 fi
 echo
 
-# Test 4: TOML configuration (AeroSpace)
+# Test 4: TOML configurations
 echo -e "${BLUE}→ Checking TOML configurations...${NC}"
+TOML_CONFIGS=("aerospace/.aerospace.toml" "herdr/.config/herdr/config.toml")
 if command_exists taplo; then
-    if [ -f "aerospace/.aerospace.toml" ]; then
-        if taplo check aerospace/.aerospace.toml 2>&1; then
-            echo -e "${GREEN}✓ .aerospace.toml syntax valid${NC}"
-        else
-            echo -e "${RED}✗ .aerospace.toml has syntax errors${NC}"
-            ERRORS=$((ERRORS + 1))
-        fi
+    if taplo check "${TOML_CONFIGS[@]}" 2>&1; then
+        echo -e "${GREEN}✓ TOML configurations valid${NC}"
+    else
+        echo -e "${RED}✗ TOML configurations have syntax errors${NC}"
+        ERRORS=$((ERRORS + 1))
     fi
 elif command_exists toml-cli; then
-    if [ -f "aerospace/.aerospace.toml" ]; then
-        if toml-cli get aerospace/.aerospace.toml "" >/dev/null 2>&1; then
-            echo -e "${GREEN}✓ .aerospace.toml syntax valid${NC}"
+    for config in "${TOML_CONFIGS[@]}"; do
+        if toml-cli get "$config" "" >/dev/null 2>&1; then
+            echo -e "${GREEN}✓ $config syntax valid${NC}"
         else
-            echo -e "${RED}✗ .aerospace.toml has syntax errors${NC}"
+            echo -e "${RED}✗ $config has syntax errors${NC}"
             ERRORS=$((ERRORS + 1))
         fi
-    fi
+    done
 else
     echo -e "${YELLOW}⚠ taplo/toml-cli not installed, skipping TOML checks${NC}"
     WARNINGS=$((WARNINGS + 1))
+fi
+if command_exists herdr; then
+    if HERDR_CONFIG_PATH="$PWD/herdr/.config/herdr/config.toml" herdr config check; then
+        echo -e "${GREEN}✓ Herdr keybindings valid${NC}"
+    else
+        echo -e "${RED}✗ Herdr configuration has issues${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
 fi
 echo
 

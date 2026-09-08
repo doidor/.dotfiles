@@ -62,6 +62,11 @@ The dotfiles include availability checks, so missing optional tools won't cause 
 Open the full ccmux picker with `prefix + Ctrl+O`, select a session, and press
 `d` to review its working-tree diff in hunk. You can also run `hunk diff` directly.
 
+Setup also installs ccmux's `relay` skill globally for GitHub Copilot, using the
+installed ccmux release. Existing relay skills are left unchanged. Use the
+picker's `m` menu and **Hand off** action, or ask Copilot to relay an existing
+session's response to another session.
+
 #### Version Managers (Optional)
 
 - [nvm](https://github.com/nvm-sh/nvm) - Node.js version manager
@@ -83,6 +88,7 @@ Open the full ccmux picker with `prefix + Ctrl+O`, select a session, and press
 
 #### Other Optional Tools
 
+- [Herdr](https://herdr.dev/) - Optional terminal multiplexer; install separately
 - [Fig](https://fig.io/) - Terminal autocomplete and workflows
 - [LM Studio](https://lmstudio.ai/) - Local LLM inference
 
@@ -96,6 +102,54 @@ git clone https://github.com/zsh-users/zsh-autosuggestions.git
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
 git clone https://github.com/seebi/dircolors-solarized.git zsh-dircolors-solarized
 ```
+
+### Herdr keybindings
+
+The optional Herdr 0.9+ profile lives in `herdr/.config/herdr/`. It maps the
+custom tmux shortcuts and common tmux defaults to Herdr-native actions without
+changing the tmux or WezTerm configurations. `./setup.sh` stows this package;
+Herdr itself is installed separately.
+
+Use one Herdr workspace per project, like a tmux session. Herdr tabs correspond
+to tmux windows, and the tab bar sits at the bottom. Separately named Herdr
+sessions isolate the entire runtime; they are not needed for normal project
+switching.
+
+Here `prefix` means `Ctrl+b`. Keys after the prefix are case-sensitive.
+
+| Shortcut | Herdr action |
+| --- | --- |
+| `prefix + h/j/k/l` | Focus a pane |
+| `prefix + Ctrl+h/j/k/l` | Resize using Herdr's native increments |
+| `prefix + %` / `prefix + "` | Split right / down, following the current directory |
+| `prefix + c` / `prefix + ,` | Create / rename a tab |
+| `prefix + n/p` / `prefix + 1..9` | Next/previous tab / select a tab |
+| `prefix + &` / `prefix + x` | Close a tab / pane |
+| `prefix + N` | Create a workspace |
+| `prefix + w` or `prefix + s` | Native workspace navigation, not the tmux fzf picker |
+| `prefix + Ctrl+O` or `prefix + q` | Herdr's go-to picker, not ccmux |
+| `prefix + Ctrl+w` or `prefix + ;` | Global last-pane toggle across tabs and workspaces |
+| `prefix + A` | Open a Copilot tab using the existing `agency copilot --yolo` launcher |
+| `prefix + S` | Show/hide the Herdr sidebar |
+| `prefix + r` / `prefix + R` | Reload configuration / enter resize mode |
+| `prefix + o` / `prefix + z` | Cycle panes / toggle zoom |
+| `prefix + $` / `prefix + (` / `prefix + )` | Rename / previous / next workspace |
+| `prefix + Q` / `prefix + g` | Herdr settings / jump to a notification target |
+| `prefix + d` / `prefix + ?` | Detach / show active keybindings |
+
+Herdr's built-in `prefix + [` copy mode remains available. `prefix + O` stays
+unbound. Resize steps and key repetition follow Herdr's behavior rather than
+tmux's five-cell steps and repeat-key window. Use `prefix + R` for Herdr's
+continuous resize mode.
+
+The ccmux review/relay UI, tmux buffer and layout commands, and tmux-resurrect's
+`prefix + Ctrl+s` / `prefix + Ctrl+r` are not ported. Herdr persists its own
+sessions, and its last-pane toggle is not the old window-only MRU history.
+Use Herdr's menus for workspace closing. `hunk diff` can still be run directly,
+but ccmux's automatic comment hand-back does not target Herdr panes.
+
+After editing the profile, run `herdr server reload-config` or use `prefix + r`.
+New Copilot tabs require the same `agency` launcher as the tmux binding.
 
 ### Testing
 
@@ -111,7 +165,8 @@ The test script validates:
 - Shell script syntax (setup.sh) using shellcheck
 - Zsh configuration syntax
 - Lua configurations (Neovim, WezTerm)
-- TOML configurations (AeroSpace)
+- TOML configurations (AeroSpace, Herdr)
+- Herdr launcher behavior without starting agents; Herdr keybindings when its CLI is installed
 - Git configuration
 - Tmux configuration
 

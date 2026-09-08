@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -eu
+
+herdr_bin=${HERDR_BIN_PATH:-herdr}
+
+fail() {
+    printf 'new-copilot: %s\n' "$1" >&2
+    if [ -n "${HERDR_SOCKET_PATH:-}" ] && command -v "$herdr_bin" >/dev/null 2>&1; then
+        if ! "$herdr_bin" notification show "Copilot launch failed" --body "$1"; then
+            printf 'new-copilot: could not display the error notification\n' >&2
+        fi
+    fi
+    exit 1
+}
+
+[ "$#" -eq 0 ] || fail "This helper takes no arguments"
+[ -n "${HERDR_SOCKET_PATH:-}" ] || fail "Run this helper from a Herdr keybinding"
+[ -n "${HERDR_ACTIVE_WORKSPACE_ID:-}" ] || fail "No active Herdr workspace"
+[ -n "${HERDR_ACTIVE_PANE_CWD:-}" ] || fail "The active pane's directory is unavailable"
+command -v python3 >/dev/null 2>&1 || fail "python3 is required to open a Copilot tab"
+
+created=$(
+    "$herdr_bin" tab create \
+        --workspace "$HERDR_ACTIVE_WORKSPACE_ID" \
+        --cwd "$HERDR_ACTIVE_PANE_CWD" \
+        --label copilot
+) || fail "Could not create a Copilot tab"
+
+pane_id=$(
+    printf '%s\n' "$created" | python3 -c '
+import json
+import sys
+
+pane_id = json.load(sys.stdin)["result"]["root_pane"]["pane_id"]
+if not isinstance(pane_id, str) or not pane_id:
+    raise ValueError("Herdr returned an invalid pane ID")
+print(pane_id)
+'
+) || fail "Herdr did not return the new tab's root pane"
+
+if ! "$herdr_bin" pane run "$pane_id" "exec env HERDR_AGENT=copilot zsh -ic 'agency copilot --yolo'"; then
+    fail "Could not send the Copilot launch command to the new tab"
+fi

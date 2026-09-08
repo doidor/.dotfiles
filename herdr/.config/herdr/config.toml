@@ -1,0 +1,63 @@
+onboarding = false
+
+[terminal]
+new_cwd = "follow"
+
+[keys]
+prefix = "ctrl+b"
+help = "prefix+?"
+detach = "prefix+d"
+reload_config = "prefix+r"
+resize_mode = "prefix+shift+r"
+
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+resize_pane_left = "prefix+ctrl+h"
+resize_pane_down = "prefix+ctrl+j"
+resize_pane_up = "prefix+ctrl+k"
+resize_pane_right = "prefix+ctrl+l"
+split_vertical = "prefix+%"
+split_horizontal = 'prefix+"'
+cycle_pane_next = "prefix+o"
+last_pane = ["prefix+ctrl+w", "prefix+;"]
+close_pane = "prefix+x"
+zoom = "prefix+z"
+
+# tmux windows map to tabs; tmux sessions map to workspaces.
+new_tab = "prefix+c"
+rename_tab = "prefix+comma"
+previous_tab = "prefix+p"
+next_tab = "prefix+n"
+switch_tab = "prefix+1..9"
+close_tab = "prefix+ampersand"
+new_workspace = "prefix+shift+n"
+workspace_picker = ["prefix+w", "prefix+s"]
+rename_workspace = "prefix+$"
+previous_workspace = "prefix+("
+next_workspace = "prefix+)"
+close_workspace = ""
+
+goto = ["prefix+ctrl+o", "prefix+q"]
+toggle_sidebar = "prefix+shift+s"
+settings = "prefix+shift+q"
+open_notification_target = "prefix+g"
+
+[[keys.command]]
+key = "prefix+shift+a"
+type = "shell"
+command = '"$HOME/.config/herdr/scripts/new-copilot"'
+description = "Open Copilot in a new tab"
+
+[ui]
+tab_bar_position = "bottom"
+status_indicators = "symbols"
+prompt_new_tab_name = false
+sidebar_collapsed_mode = "hidden"
+
+[ui.sound]
+enabled = true
+
+[ui.toast]
+delivery = "system"

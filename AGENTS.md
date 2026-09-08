@@ -8,6 +8,7 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 .dotfiles/
 ├── aerospace/          # AeroSpace tiling window manager config (macOS)
 ├── git/                # Git configuration
+├── herdr/              # Optional Herdr multiplexer config and helpers
 ├── nvim/               # Neovim configuration (Lua-based)
 ├── qmk/                # QMK keyboard firmware mappings
 ├── tmux/               # Tmux terminal multiplexer config
@@ -27,6 +28,7 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 - `nvim/.config/nvim/init.lua` - Neovim entry point
 - `nvim/.config/nvim/lua/plugins.lua` - Plugin definitions (lazy.nvim)
 - `tmux/.tmux.conf` - Tmux configuration with TPM plugins
+- `herdr/.config/herdr/config.toml` - Herdr-native tmux-style keybindings
 - `wezterm/.wezterm.lua` - WezTerm terminal configuration
 - `git/.gitconfig` - Git aliases and settings
 
@@ -38,6 +40,10 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 - tmux helpers live in `tmux/.config/tmux/scripts/`:
   `prefix + w` opens the fzf window finder, `prefix + Ctrl+O` opens ccmux,
   and `prefix + S` toggles its sidebar
+- Herdr's optional profile uses native equivalents of those shortcuts.
+  Helpers live in `herdr/.config/herdr/scripts/` and are shellchecked by
+  `./test.sh`. Do not route Herdr picker bindings through ccmux: it only
+  controls tmux panes. Keep the existing tmux and WezTerm setup independent.
 - The tmux status bar is hand-rolled in `.tmux.conf`, with no theme plugin. Keep
   it to BMP characters: Nerd Font icons above U+FFFF render as empty boxes in
   this WezTerm build. Box-drawing characters are safe, WezTerm draws those
@@ -67,7 +73,7 @@ The setup script automatically installs:
 - Developer CLIs: azure-cli (`az`), gh
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),
-  ccmux (agent session tracker; `prefix + Ctrl+O` opens its TUI)
+  ccmux and its `relay` skill for Copilot (`prefix + Ctrl+O` opens ccmux)
 - Fonts: Hack Nerd Font, ProFont Nerd Font (required by WezTerm and Zed configs)
 - macOS apps: AeroSpace, Rectangle, Alt-Tab
 - macOS startup apps: 1Password, Cotypist, DisplayLink, Logitech G Hub, OpenIn

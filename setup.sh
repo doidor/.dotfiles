@@ -440,6 +440,37 @@ install_ai_tools() {
     fi
 }
 
+# Install the ccmux relay skill for GitHub Copilot
+install_ccmux_relay_skill() {
+    print_header "Installing ccmux relay skill..."
+
+    if [ -f "$HOME/.agents/skills/relay/SKILL.md" ] ||
+        [ -f "$HOME/.copilot/skills/relay/SKILL.md" ]; then
+        print_success "relay skill already present; leaving it unchanged"
+        return
+    fi
+
+    if ! command_exists ccmux || ! command_exists copilot || ! command_exists npx; then
+        print_warning "ccmux, Copilot CLI and npx are required for the relay skill; skipping"
+        return
+    fi
+
+    local ccmux_version
+    if ! ccmux_version=$(ccmux --version); then
+        print_warning "Could not determine the ccmux version; skipping relay skill"
+        return
+    fi
+
+    # Keep the skill's instructions compatible with the installed CLI release.
+    if npx --yes -- skills add \
+        "https://github.com/epilande/ccmux/tree/v${ccmux_version}/plugins/ccmux/skills/relay" \
+        --global --agent github-copilot --skill relay --yes; then
+        print_success "ccmux relay skill installed for GitHub Copilot"
+    else
+        print_warning "ccmux relay skill installation failed; rerun ./setup.sh to retry"
+    fi
+}
+
 # Install macOS-specific tools
 install_macos_tools() {
     if [ "$OS" != "macos" ]; then
@@ -728,6 +759,7 @@ main() {
     install_version_managers
     install_languages
     install_ai_tools
+    install_ccmux_relay_skill
     install_macos_tools
     install_startup_apps
     install_tpm

@@ -40,7 +40,9 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 - tmux helpers live in `tmux/.config/tmux/scripts/`:
   `prefix + w` opens the fzf window finder, `prefix + Ctrl+O` opens ccmux,
   and `prefix + S` toggles its sidebar
-- Herdr's optional profile uses native equivalents of those shortcuts.
+- In tmux, `prefix + &` closes the current window and `prefix + X` closes the
+  current session without confirmation. `prefix + x` keeps its pane confirmation.
+- Herdr's optional profile has a separate tmux-style keymap.
   Helpers live in `herdr/.config/herdr/scripts/` and are shellchecked by
   `./test.sh`. Do not route Herdr picker bindings through ccmux: it only
   controls tmux panes. Keep the existing tmux and WezTerm setup independent.

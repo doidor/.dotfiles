@@ -103,6 +103,16 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
 git clone https://github.com/seebi/dircolors-solarized.git zsh-dircolors-solarized
 ```
 
+### Tmux closing shortcuts
+
+With the `Ctrl+b` prefix, `&` closes the current window immediately and
+uppercase `X` closes the entire current tmux session without confirmation.
+These are kill operations, not detach: contained programs may stop and unsaved
+work may be lost.
+
+`prefix + x` still asks before closing an individual pane. Confirmation prompts
+inside ccmux and tmux's session picker are unchanged.
+
 ### Herdr keybindings
 
 The optional Herdr 0.9+ profile lives in `herdr/.config/herdr/`. It maps the

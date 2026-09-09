@@ -73,6 +73,10 @@ session's response to another session.
 - [pyenv](https://github.com/pyenv/pyenv) - Python version manager
 - [bun](https://bun.sh/) - JavaScript runtime and package manager
 
+When nvm is installed, zsh uses the nearest `.nvmrc` on startup and directory
+changes, installs missing Node versions, and restores the default when leaving
+a project, following [nvm's zsh integration](https://github.com/nvm-sh/nvm#zsh).
+
 #### Package Managers (Optional)
 
 - [Homebrew](https://brew.sh/) - Package manager (macOS/Linux)
@@ -105,13 +109,13 @@ git clone https://github.com/seebi/dircolors-solarized.git zsh-dircolors-solariz
 
 ### Tmux closing shortcuts
 
-With the `Ctrl+b` prefix, `&` closes the current window immediately and
-uppercase `X` closes the entire current tmux session without confirmation.
+With the `Ctrl+b` prefix, lowercase `x` closes the current pane, `&` closes the
+current window, and uppercase `X` closes the entire current tmux session, all
+without confirmation.
 These are kill operations, not detach: contained programs may stop and unsaved
 work may be lost.
 
-`prefix + x` still asks before closing an individual pane. Confirmation prompts
-inside ccmux and tmux's session picker are unchanged.
+Confirmation prompts inside ccmux and tmux's session picker are unchanged.
 
 ### Herdr keybindings
 
@@ -173,7 +177,7 @@ This repository includes automated testing to validate configurations before dep
 
 The test script validates:
 - Shell script syntax (setup.sh) using shellcheck
-- Zsh configuration syntax
+- Zsh configuration syntax and nvm auto-switching behavior
 - Lua configurations (Neovim, WezTerm)
 - TOML configurations (AeroSpace, Herdr)
 - Herdr launcher behavior without starting agents; Herdr keybindings when its CLI is installed

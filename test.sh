@@ -74,6 +74,17 @@ if command_exists zsh; then
         echo -e "${RED}✗ .zshrc has syntax errors${NC}"
         ERRORS=$((ERRORS + 1))
     fi
+    if command_exists python3; then
+        if python3 .github/tests/test_nvm_zsh.py; then
+            echo -e "${GREEN}✓ nvm zsh integration valid${NC}"
+        else
+            echo -e "${RED}✗ nvm zsh integration has issues${NC}"
+            ERRORS=$((ERRORS + 1))
+        fi
+    else
+        echo -e "${YELLOW}⚠ python3 not installed, skipping nvm zsh integration checks${NC}"
+        WARNINGS=$((WARNINGS + 1))
+    fi
 else
     echo -e "${YELLOW}⚠ zsh not installed, skipping zsh checks${NC}"
     WARNINGS=$((WARNINGS + 1))

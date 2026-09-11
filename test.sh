@@ -50,17 +50,17 @@ else
 fi
 echo
 
-# Herdr launcher behavior, without starting Herdr or an agent.
-echo -e "${BLUE}→ Checking Herdr launcher...${NC}"
+# Herdr helper behavior, without starting Herdr or an agent.
+echo -e "${BLUE}→ Checking Herdr helpers...${NC}"
 if command_exists python3; then
-    if python3 .github/tests/test_herdr_launcher.py; then
-        echo -e "${GREEN}✓ Herdr launcher behavior valid${NC}"
+    if python3 -B -m unittest discover -s .github/tests -p 'test_herdr*.py'; then
+        echo -e "${GREEN}✓ Herdr helper behavior valid${NC}"
     else
-        echo -e "${RED}✗ Herdr launcher has issues${NC}"
+        echo -e "${RED}✗ Herdr helpers have issues${NC}"
         ERRORS=$((ERRORS + 1))
     fi
 else
-    echo -e "${YELLOW}⚠ python3 not installed, skipping Herdr launcher checks${NC}"
+    echo -e "${YELLOW}⚠ python3 not installed, skipping Herdr helper checks${NC}"
     WARNINGS=$((WARNINGS + 1))
 fi
 echo
@@ -142,7 +142,11 @@ echo
 
 # Test 4: TOML configurations
 echo -e "${BLUE}→ Checking TOML configurations...${NC}"
-TOML_CONFIGS=("aerospace/.aerospace.toml" "herdr/.config/herdr/config.toml")
+TOML_CONFIGS=(
+    "aerospace/.aerospace.toml"
+    "herdr/.config/herdr/config.toml"
+    "herdr/.config/herdr/agent-detection/copilot.toml"
+)
 if command_exists taplo; then
     if taplo check "${TOML_CONFIGS[@]}" 2>&1; then
         echo -e "${GREEN}✓ TOML configurations valid${NC}"

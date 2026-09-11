@@ -144,7 +144,7 @@ Here `prefix` means `Ctrl+b`. Keys after the prefix are case-sensitive.
 | `prefix + Ctrl+O` or `prefix + q` | Herdr's go-to picker, not ccmux |
 | `prefix + Ctrl+w` or `prefix + ;` | Global last-pane toggle across tabs and workspaces |
 | `prefix + A` | Open a Copilot tab using the existing `agency copilot --yolo` launcher |
-| `prefix + S` | Show/hide the Herdr sidebar |
+| `prefix + S` | Toggle expanded / compact sidebar (compact mode shows workspace numbers) |
 | `prefix + r` / `prefix + R` | Reload configuration / enter resize mode |
 | `prefix + o` / `prefix + z` | Cycle panes / toggle zoom |
 | `prefix + $` / `prefix + (` / `prefix + )` | Rename / previous / next workspace |
@@ -162,8 +162,85 @@ sessions, and its last-pane toggle is not the old window-only MRU history.
 Use Herdr's menus for workspace closing. `hunk diff` can still be run directly,
 but ccmux's automatic comment hand-back does not target Herdr panes.
 
-After editing the profile, run `herdr server reload-config` or use `prefix + r`.
+After editing the profile, use `prefix + r` inside Herdr to reload both the
+attached client's UI settings and the server configuration. The CLI command
+`herdr server reload-config` reloads only the server; sidebar changes require
+the in-app shortcut.
 New Copilot tabs require the same `agency` launcher as the tmux binding.
+
+### Herdr Copilot detection
+
+`herdr/.config/herdr/agent-detection/copilot.toml` overrides Herdr's Copilot
+screen-detection manifest. It recognizes all four animated "Waiting for
+background agents" markers, preventing false completion notifications between
+spinner frames while preserving the existing working and approval-prompt rules.
+
+After editing this manifest, run `stow herdr` and
+`herdr server reload-agent-manifests`. This reloads detection without restarting
+agents; the regular config-reload shortcut does not reload these rules.
+Local manifests replace, rather than extend, the downloaded rules. Remove this
+override once upstream includes the fix so future Copilot detection updates can
+apply normally.
+
+### Copy tmux layouts into Herdr
+
+`~/.config/herdr/scripts/tmux-to-herdr` takes a read-only JSON snapshot and
+recreates it in an explicitly selected, already-running local Herdr session.
+It maps tmux sessions to workspaces, windows to tabs, and panes to fresh shells,
+preserving session/window names, window order, pane working directories, and
+split proportions. It does not move or restart the processes running in tmux,
+replay commands, copy environment variables, or copy scrollback.
+
+After adding the helper, run `stow herdr` from this repository. It needs
+Python 3.9+, tmux for capture, and Herdr 0.9+ for restore; no Python packages
+are required.
+
+```bash
+# Capture all sessions on the current tmux server. Existing files are never overwritten.
+~/.config/herdr/scripts/tmux-to-herdr snapshot ~/tmux-layout.json
+
+# Open a separate destination in another terminal; keep the tmux sessions running.
+herdr --session tmux-import
+
+# Validate the snapshot and destination without creating anything.
+~/.config/herdr/scripts/tmux-to-herdr restore ~/tmux-layout.json \
+  --herdr-session tmux-import --dry-run
+
+# Recreate the layout. Save the returned tmux-to-Herdr ID mapping for reference.
+~/.config/herdr/scripts/tmux-to-herdr restore ~/tmux-layout.json \
+  --herdr-session tmux-import > ~/tmux-import-map.json
+```
+
+Use repeated `snapshot --session NAME` options to capture only selected tmux
+sessions, or `--tmux-socket PATH` to select a different tmux server. Restore
+requires either `--herdr-session NAME` (`default` is valid) or
+`--herdr-socket PATH`; inherited caller session/pane context cannot override
+that destination. Existing destination workspaces are left alone. Imports
+refuse duplicate workspace names, including on a second run; use
+`--prefix tmux-` or a different destination to avoid collisions.
+
+Missing directories, inconsistent snapshots, labels that conflict with Herdr's
+global CLI flags, and splits outside its 10%-90% ratio range fail before
+anything is created. Multi-way tmux splits
+become balanced binary splits; terminal dimensions and different pane borders
+can change exact cell sizes. Linked tmux windows become independent copies in
+each workspace. Focus, zoom state, and tmux-specific window/pane indices are
+not transferred, and creation uses `--no-focus`.
+
+Do not rearrange tmux panes during capture; the helper rejects a snapshot if
+the topology changes. If Herdr fails midway through restoration, the helper
+reports the created workspace IDs and leaves partial imports in place rather
+than closing shells automatically. Snapshot files are created with mode
+`0600` because directory paths and session names may be private; keep them and
+the returned ID mapping outside the dotfiles repository.
+
+The optional round-trip test runs real tmux and Herdr instances with a temporary
+home directory and dedicated sockets, then shuts down only those test instances:
+
+```bash
+HERDR_IMPORT_INTEGRATION=1 python3 -B -m unittest discover \
+  -s .github/tests -p 'test_herdr*.py'
+```
 
 ### Testing
 
@@ -180,7 +257,7 @@ The test script validates:
 - Zsh configuration syntax and nvm auto-switching behavior
 - Lua configurations (Neovim, WezTerm)
 - TOML configurations (AeroSpace, Herdr)
-- Herdr launcher behavior without starting agents; Herdr keybindings when its CLI is installed
+- Herdr launcher and tmux importer behavior without starting agents; keybindings and Copilot detection when Herdr is installed
 - Git configuration
 - Tmux configuration
 

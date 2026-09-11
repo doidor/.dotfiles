@@ -1,6 +1,9 @@
 -- Pull in the wezterm API
 local wezterm = require 'wezterm'
 
+-- Temporary trial: set to false to start tmux again.
+local use_herdr = true
+
 -- This table will hold the configuration.
 local config = {}
 
@@ -46,7 +49,11 @@ for _, path in ipairs(tmux_paths) do
   end
 end
 
-config.default_prog = { tmux_cmd, '-T 256' }
+if use_herdr then
+  config.default_prog = { wezterm.home_dir .. '/.local/bin/herdr' }
+else
+  config.default_prog = { tmux_cmd, '-T 256' }
+end
 
 -- and finally, return the configuration to wezterm
 return config

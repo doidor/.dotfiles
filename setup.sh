@@ -502,6 +502,28 @@ install_macos_tools() {
         brew install --cask alt-tab
         print_success "Alt-Tab installed"
     fi
+
+    # Zed's terminal launcher is named "cli" inside the app bundle.
+    local zed_cli="/Applications/Zed.app/Contents/MacOS/cli"
+    if [ -x "$zed_cli" ]; then
+        print_success "Zed already installed"
+    elif [ -x "$HOME/Applications/Zed.app/Contents/MacOS/cli" ]; then
+        zed_cli="$HOME/Applications/Zed.app/Contents/MacOS/cli"
+        print_success "Zed already installed"
+    else
+        brew install --cask zed
+        print_success "Zed installed"
+    fi
+
+    if ! command_exists zed && [ ! -x "$HOME/.local/bin/zed" ]; then
+        if [ ! -x "$zed_cli" ]; then
+            print_error "Zed's CLI launcher was not found in its app bundle"
+            return 1
+        fi
+        mkdir -p "$HOME/.local/bin"
+        ln -s "$zed_cli" "$HOME/.local/bin/zed"
+        print_success "Zed CLI linked into ~/.local/bin"
+    fi
 }
 
 # Install Mac App Store-only apps

@@ -6,3 +6,4 @@ __pycache__/
 *.py[cod]
 /tmux-layout.json
 /tmux-import-map.json
+/zed/.config/zed/prompts/

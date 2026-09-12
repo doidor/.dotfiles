@@ -61,3 +61,7 @@ enabled = true
 
 [ui.toast]
 delivery = "system"
+
+[theme]
+name = "dracula"
+auto_switch = false

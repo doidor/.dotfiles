@@ -88,6 +88,7 @@ a project, following [nvm's zsh integration](https://github.com/nvm-sh/nvm#zsh).
 - [AeroSpace](https://github.com/nikitabobko/AeroSpace) - Tiling window manager
 - [Rectangle](https://rectangleapp.com/) - Window management
 - [Alt-Tab](https://alt-tab-macos.netlify.app/) - Windows-style alt-tab
+- [Zed](https://zed.dev/) - Editor, with `zed <folder>` available on the shell PATH
 - [MeetingBar](https://github.com/leits/MeetingBar) - Calendar in menu bar
 
 #### Other Optional Tools

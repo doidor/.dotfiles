@@ -132,6 +132,9 @@ switching.
 
 Here `prefix` means `Ctrl+b`. Keys after the prefix are case-sensitive.
 
+The Agents sidebar defaults to priority order. A manually selected sort in the
+Agents header overrides this default.
+
 | Shortcut | Herdr action |
 | --- | --- |
 | `prefix + h/j/k/l` | Focus a pane |
@@ -144,6 +147,8 @@ Here `prefix` means `Ctrl+b`. Keys after the prefix are case-sensitive.
 | `prefix + w` or `prefix + s` | Native workspace navigation, not the tmux fzf picker |
 | `prefix + Ctrl+O` or `prefix + q` | Herdr's go-to picker, not ccmux |
 | `prefix + Ctrl+w` or `prefix + ;` | Global last-pane toggle across tabs and workspaces |
+| `prefix + Ctrl+1..9` | Focus agent 1-9 in current sidebar order |
+| `prefix + Ctrl+n` / `prefix + Ctrl+p` | Focus the next / previous agent in current sidebar order |
 | `prefix + A` | Open a Copilot tab using the existing `agency copilot --yolo` launcher |
 | `prefix + S` | Toggle expanded / compact sidebar (compact mode shows workspace numbers) |
 | `prefix + r` / `prefix + R` | Reload configuration / enter resize mode |
@@ -168,6 +173,13 @@ attached client's UI settings and the server configuration. The CLI command
 `herdr server reload-config` reloads only the server; sidebar changes require
 the in-app shortcut.
 New Copilot tabs require the same `agency` launcher as the tmux binding.
+
+Agent navigation uses native Herdr actions, including indexed jumps to agents
+1-9; no helper script is required. The WezTerm Herdr profile enables Kitty keyboard
+negotiation so control-number keys stay distinct from plain numbers (tab selection).
+Indexed jumps stop at 9; next/previous can reach agents beyond that. Priority order
+can change as agents finish or need attention; these shortcuts follow the current
+order, not a frozen list.
 
 ### Herdr Copilot detection
 
@@ -235,11 +247,12 @@ than closing shells automatically. Snapshot files are created with mode
 `0600` because directory paths and session names may be private; keep them and
 the returned ID mapping outside the dotfiles repository.
 
-The optional round-trip test runs real tmux and Herdr instances with a temporary
-home directory and dedicated sockets, then shuts down only those test instances:
+The optional integration tests run real tmux and Herdr instances with temporary
+home directories and dedicated sockets, then shut down only those test instances:
 
 ```bash
-HERDR_IMPORT_INTEGRATION=1 python3 -B -m unittest discover \
+HERDR_IMPORT_INTEGRATION=1 HERDR_KEYBINDINGS_INTEGRATION=1 \
+  python3 -B -m unittest discover \
   -s .github/tests -p 'test_herdr*.py'
 ```
 

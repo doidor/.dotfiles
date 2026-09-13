@@ -40,6 +40,9 @@ next_workspace = "prefix+)"
 close_workspace = ""
 
 goto = ["prefix+ctrl+o", "prefix+q"]
+focus_agent = "prefix+ctrl+1..9"
+next_agent = "prefix+ctrl+n"
+previous_agent = "prefix+ctrl+p"
 toggle_sidebar = "prefix+shift+s"
 settings = "prefix+shift+q"
 open_notification_target = "prefix+g"
@@ -55,6 +58,7 @@ tab_bar_position = "bottom"
 status_indicators = "symbols"
 prompt_new_tab_name = false
 sidebar_collapsed_mode = "compact"
+agent_panel_sort = "priority"
 
 [ui.sound]
 enabled = true

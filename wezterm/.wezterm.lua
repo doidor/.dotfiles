@@ -50,6 +50,8 @@ for _, path in ipairs(tmux_paths) do
 end
 
 if use_herdr then
+  -- Let Herdr distinguish Ctrl+number from unmodified tab-number keys.
+  config.enable_kitty_keyboard = true
   config.default_prog = { wezterm.home_dir .. '/.local/bin/herdr' }
 else
   config.default_prog = { tmux_cmd, '-T 256' }

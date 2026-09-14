@@ -5,17 +5,21 @@ import os
 from pathlib import Path
 import pty
 import select
+import shlex
 import shutil
 import struct
 import subprocess
 import sys
 import tempfile
 import termios
+import textwrap
 import time
 import unittest
 
 
-CONFIG = Path(__file__).resolve().parents[2] / "herdr/.config/herdr/config.toml"
+ROOT = Path(__file__).resolve().parents[2]
+CONFIG = ROOT / "herdr/.config/herdr/config.toml"
+ESCAPE_PRESS = b"\x1b[27;1u"
 
 
 def read_config():
@@ -38,6 +42,83 @@ class HerdrKeybindingTests(unittest.TestCase):
         commands = {command["key"]: command for command in keys["command"]}
         self.assertIn("new-copilot", commands["prefix+shift+a"]["command"])
         self.assertFalse(any("first-agent" in command["command"] for command in commands.values()))
+
+
+@unittest.skipUnless(shutil.which("wezterm"), "WezTerm is required to evaluate its Lua configuration")
+class WezTermHerdrKeyTests(unittest.TestCase):
+    def test_scoped_escape_and_number_encodings_preserve_other_applications(self):
+        with tempfile.TemporaryDirectory(prefix="dotfiles-wezterm-keys-") as temporary:
+            directory = Path(temporary)
+            marker = directory / "passed"
+            config = directory / "test.lua"
+            config.write_text(textwrap.dedent(r"""
+                local stub = {
+                  home_dir = os.getenv('HOME'),
+                  config_builder = function() return {} end,
+                  font = function() return {} end,
+                  action_callback = function(callback) return callback end,
+                  action = {
+                    SendString = function(text) return { kind = 'text', text = text } end,
+                    SendKey = function(key) return { kind = 'key', key = key.key, mods = key.mods } end,
+                  },
+                }
+                package.loaded.wezterm = stub
+                local config = dofile(os.getenv('DOTFILES_WEZTERM_CONFIG'))
+                assert(config.enable_kitty_keyboard == false)
+                assert(#config.keys == 10)
+                local bindings = {}
+                for _, binding in ipairs(config.keys) do
+                  bindings[binding.mods .. ':' .. binding.key] = binding
+                end
+                local cases = { { 'Escape', 'NONE', '\x1b[27;1u' } }
+                for number = 1, 9 do
+                  table.insert(cases, { tostring(number), 'CTRL',
+                    string.format('\x1b[%d;5u', 48 + number) })
+                end
+                for _, case in ipairs(cases) do
+                  local key, mods, sequence = table.unpack(case)
+                  local binding = assert(bindings[mods .. ':' .. key])
+                  for _, process in ipairs({
+                    '/usr/local/bin/herdr', 'herdr',
+                    '/bin/zsh', '/usr/bin/ssh', '/usr/bin/not-herdr', false,
+                  }) do
+                    local sent = {}
+                    local pane = {
+                      get_foreground_process_name = function() return process or nil end,
+                    }
+                    local window = {
+                      perform_action = function(_, action, target)
+                        assert(target == pane)
+                        table.insert(sent, action)
+                      end,
+                    }
+                    binding.action(window, pane)
+                    assert(#sent == 1)
+                    if process == '/usr/local/bin/herdr' or process == 'herdr' then
+                      assert(sent[1].kind == 'text' and sent[1].text == sequence)
+                    else
+                      assert(sent[1].kind == 'key')
+                      assert(sent[1].key == key and sent[1].mods == mods)
+                    end
+                  end
+                end
+                local marker = assert(io.open(os.getenv('DOTFILES_WEZTERM_RESULT'), 'w'))
+                marker:write('ok')
+                marker:close()
+                return {}
+            """), encoding="utf-8")
+            result = subprocess.run(
+                [shutil.which("wezterm"), "--config-file", str(config), "show-keys"],
+                env={
+                    **os.environ,
+                    "DOTFILES_WEZTERM_CONFIG": str(ROOT / "wezterm/.wezterm.lua"),
+                    "DOTFILES_WEZTERM_RESULT": str(marker),
+                },
+                capture_output=True, text=True, timeout=15, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(marker.exists(), result.stderr)
+            self.assertEqual(marker.read_text(encoding="utf-8"), "ok")
 
 
 @unittest.skipUnless(
@@ -217,6 +298,60 @@ class HerdrKeyboardIntegrationTests(unittest.TestCase):
         press_and_expect(b"\x02\x0e", top_agent)
         press_and_expect(b"\x02\x10", first_pane)
         press_and_expect(b"\x02\x1b[49;5u", top_agent)
+
+        reader = directory / "capture_keys.py"
+        captured = directory / "captured_keys"
+        reader.write_text(textwrap.dedent("""
+            import os
+            from pathlib import Path
+            import sys
+            import termios
+            import tty
+
+            output = Path(sys.argv[1])
+            temporary = output.with_suffix(".tmp")
+            data = bytearray()
+            saved = termios.tcgetattr(sys.stdin.fileno())
+            try:
+                tty.setraw(sys.stdin.fileno())
+                output.write_bytes(b"")
+                while True:
+                    chunk = os.read(sys.stdin.fileno(), 1024)
+                    if not chunk or chunk == b"q":
+                        break
+                    data.extend(chunk)
+                    temporary.write_bytes(data)
+                    temporary.replace(output)
+            finally:
+                termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, saved)
+        """), encoding="utf-8")
+        captured_tab = call(
+            "tab", "create", "--workspace", second["workspace"]["workspace_id"],
+            "--label", "key-capture", "--cwd", str(directory), "--no-focus",
+        )
+        captured_pane = captured_tab["root_pane"]["pane_id"]
+        titles[captured_pane] = "attention|key-capture"
+        subprocess.run(
+            [*command, "pane", "run", captured_pane,
+             shlex.join(["exec", sys.executable, str(reader), str(captured)])],
+            env=env, capture_output=True, text=True, timeout=10, check=True,
+        )
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            drain()
+            if captured.exists() and b"key-capture" in screen:
+                break
+            time.sleep(0.05)
+        else:
+            self.fail("The isolated raw key reader did not become ready")
+        press_and_expect(b"\x023", captured_pane)
+        os.write(master, ESCAPE_PRESS * 3)
+        deadline = time.monotonic() + 2
+        while captured.read_bytes() != b"\x1b" * 3 and time.monotonic() < deadline:
+            drain()
+            time.sleep(0.05)
+        self.assertEqual(captured.read_bytes(), b"\x1b" * 3, "Rapid Escape presses must arrive once each")
+        os.write(master, b"q")
 
 
 if __name__ == "__main__":

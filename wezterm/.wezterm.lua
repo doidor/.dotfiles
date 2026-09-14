@@ -50,8 +50,35 @@ for _, path in ipairs(tmux_paths) do
 end
 
 if use_herdr then
-  -- Let Herdr distinguish Ctrl+number from unmodified tab-number keys.
-  config.enable_kitty_keyboard = true
+  -- Herdr can merge a quick Escape press with its Kitty key-release event.
+  config.enable_kitty_keyboard = false
+
+  local function herdr_key(key, mods, sequence)
+    return {
+      key = key,
+      mods = mods,
+      action = wezterm.action_callback(function(window, pane)
+        local process = pane:get_foreground_process_name()
+        local action
+        if process == 'herdr' or (process and process:match('/herdr$')) then
+          action = wezterm.action.SendString(sequence)
+        else
+          action = wezterm.action.SendKey { key = key, mods = mods }
+        end
+        window:perform_action(action, pane)
+      end),
+    }
+  end
+
+  config.keys = {
+    herdr_key('Escape', 'NONE', '\x1b[27;1u'),
+  }
+  for number = 1, 9 do
+    table.insert(config.keys, herdr_key(
+      tostring(number), 'CTRL', string.format('\x1b[%d;5u', 48 + number)
+    ))
+  end
+
   config.default_prog = { wezterm.home_dir .. '/.local/bin/herdr' }
 else
   config.default_prog = { tmux_cmd, '-T 256' }

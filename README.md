@@ -175,11 +175,15 @@ the in-app shortcut.
 New Copilot tabs require the same `agency` launcher as the tmux binding.
 
 Agent navigation uses native Herdr actions, including indexed jumps to agents
-1-9; no helper script is required. The WezTerm Herdr profile enables Kitty keyboard
-negotiation so control-number keys stay distinct from plain numbers (tab selection).
-Indexed jumps stop at 9; next/previous can reach agents beyond that. Priority order
-can change as agents finish or need attention; these shortcuts follow the current
-order, not a frozen list.
+1-9; no helper script is required. Indexed jumps stop at 9; next/previous can reach
+agents beyond that. Priority order can change as agents finish or need attention;
+these shortcuts follow the current order, not a frozen list.
+
+The WezTerm Herdr profile keeps full Kitty keyboard mode disabled because it can
+swallow quick Escape taps ([herdrdev/herdr#1266](https://github.com/herdrdev/herdr/issues/1266)).
+It sends unambiguous Escape and control-number sequences only when Herdr is the
+foreground process. Plain numbers still select tabs, and other applications keep
+normal key handling.
 
 ### Herdr Copilot detection
 

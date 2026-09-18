@@ -193,6 +193,7 @@ install_core_tools() {
     # installs as `tree-sitter` (the `tree-sitter` formula is the library only).
     local tools=(
         "neovim|nvim"
+        "go|go"
         "tmux|tmux"
         "fzf|fzf"
         "ripgrep|rg"
@@ -292,6 +293,38 @@ install_cli_tools() {
             print_warning "$formula failed to install; install it manually"
         fi
     done
+}
+
+install_container_tools() {
+    [ "$OS" = "macos" ] || return 0
+    print_header "Installing local container tools..."
+    local formula
+    for formula in colima docker docker-buildx docker-compose qemu; do
+        if command_exists "$formula" || brew list --formula "$formula" >/dev/null 2>&1; then
+            print_success "$formula already installed"
+        elif brew install "$formula"; then
+            print_success "$formula installed"
+        else
+            print_error "$formula failed to install"
+            return 1
+        fi
+    done
+
+    # Discover plugins without rewriting Docker's potentially credential-bearing config.
+    local plugin link plugin_name
+    for plugin_name in docker-buildx docker-compose; do
+        plugin="$(brew --prefix)/lib/docker/cli-plugins/$plugin_name"
+        link="$HOME/.docker/cli-plugins/$plugin_name"
+        if [ -x "$plugin" ] && [ ! -e "$link" ] && [ ! -L "$link" ]; then
+            mkdir -p "$HOME/.docker/cli-plugins"
+            ln -s "$plugin" "$link"
+        fi
+    done
+    if ! docker buildx version >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+        print_error "Docker Buildx or Compose is unavailable; inspect the CLI plugin installation"
+        return 1
+    fi
+    print_success "Container tools provisioned; start Colima explicitly when needed"
 }
 
 # Install version managers
@@ -778,6 +811,7 @@ main() {
     install_fonts
     install_shell_enhancements
     install_cli_tools
+    install_container_tools
     install_version_managers
     install_languages
     install_ai_tools

@@ -67,12 +67,14 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 
 The setup script automatically installs:
 - Homebrew (package manager)
-- Core tools: neovim, tmux, fzf, ripgrep, tree-sitter-cli (builds nvim-treesitter
+- Core tools: neovim, Go, tmux, fzf, ripgrep, tree-sitter-cli (builds nvim-treesitter
   parsers), WezTerm
 - Shell: zsh, oh-my-zsh, zsh-autosuggestions, zsh-syntax-highlighting
 - Enhancements: zoxide, direnv, lazygit, hunk (diff review in ccmux), chafa
   (sixel image viewer for tmux)
 - Developer CLIs: azure-cli (`az`), gh
+- macOS container tools: Colima, Docker CLI, Buildx, Compose and QEMU;
+  provisioning does not start a VM
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),
   ccmux and its `relay` skill for Copilot (`prefix + Ctrl+O` opens ccmux)

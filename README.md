@@ -89,6 +89,10 @@ a project, following [nvm's zsh integration](https://github.com/nvm-sh/nvm#zsh).
 - [Rectangle](https://rectangleapp.com/) - Window management
 - [Alt-Tab](https://alt-tab-macos.netlify.app/) - Windows-style alt-tab
 - [Zed](https://zed.dev/) - Editor, with `zed <folder>` available on the shell PATH
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) - Docker Engine,
+  CLI, Buildx and Compose; open the app after setup to complete first-run setup.
+  Colima and QEMU remain installed as an alternative runtime. Provisioning does
+  not start either runtime or accept Docker's license.
 - [MeetingBar](https://github.com/leits/MeetingBar) - Calendar in menu bar
 
 #### Other Optional Tools

@@ -73,8 +73,9 @@ The setup script automatically installs:
 - Enhancements: zoxide, direnv, lazygit, hunk (diff review in ccmux), chafa
   (sixel image viewer for tmux)
 - Developer CLIs: azure-cli (`az`), gh
-- macOS container tools: Colima, Docker CLI, Buildx, Compose and QEMU;
-  provisioning does not start a VM
+- macOS container tools: Docker Desktop (including Docker CLI, Buildx and Compose),
+  plus Colima and QEMU as an alternative; provisioning does not start a VM or
+  accept Docker's license
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),
   ccmux and its `relay` skill for Copilot (`prefix + Ctrl+O` opens ccmux)

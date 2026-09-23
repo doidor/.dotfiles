@@ -299,7 +299,7 @@ install_container_tools() {
     [ "$OS" = "macos" ] || return 0
     print_header "Installing local container tools..."
     local formula
-    for formula in colima docker docker-buildx docker-compose qemu; do
+    for formula in colima qemu; do
         if command_exists "$formula" || brew list --formula "$formula" >/dev/null 2>&1; then
             print_success "$formula already installed"
         elif brew install "$formula"; then
@@ -310,21 +310,46 @@ install_container_tools() {
         fi
     done
 
+    local docker_app="/Applications/Docker.app"
+    if [ ! -d "$docker_app" ] && [ -d "$HOME/Applications/Docker.app" ]; then
+        docker_app="$HOME/Applications/Docker.app"
+    fi
+    if [ -d "$docker_app" ]; then
+        print_success "Docker Desktop already installed"
+    else
+        # Desktop's CLI and shell completions conflict with these formulae.
+        for formula in docker docker-compose; do
+            if brew list --formula "$formula" >/dev/null 2>&1; then
+                brew unlink "$formula"
+            fi
+        done
+        if brew install --cask docker-desktop; then
+            print_success "Docker Desktop installed"
+        else
+            print_error "Docker Desktop failed to install; standalone CLI packages can be restored with brew link"
+            return 1
+        fi
+    fi
+
     # Discover plugins without rewriting Docker's potentially credential-bearing config.
     local plugin link plugin_name
     for plugin_name in docker-buildx docker-compose; do
-        plugin="$(brew --prefix)/lib/docker/cli-plugins/$plugin_name"
+        plugin="$docker_app/Contents/Resources/cli-plugins/$plugin_name"
         link="$HOME/.docker/cli-plugins/$plugin_name"
         if [ -x "$plugin" ] && [ ! -e "$link" ] && [ ! -L "$link" ]; then
             mkdir -p "$HOME/.docker/cli-plugins"
             ln -s "$plugin" "$link"
+        elif [ -x "$plugin" ] && [ -L "$link" ] &&
+            [ "$(readlink "$link")" = "$(brew --prefix)/lib/docker/cli-plugins/$plugin_name" ]; then
+            # Migrate links from the previous setup without replacing custom plugins.
+            ln -sfn "$plugin" "$link"
         fi
     done
     if ! docker buildx version >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
         print_error "Docker Buildx or Compose is unavailable; inspect the CLI plugin installation"
         return 1
     fi
-    print_success "Container tools provisioned; start Colima explicitly when needed"
+    print_success "Container tools provisioned; open Docker Desktop to complete first-run setup, or start Colima explicitly"
 }
 
 # Install version managers

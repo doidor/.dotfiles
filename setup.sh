@@ -697,6 +697,67 @@ install_tmux_plugins() {
     fi
 }
 
+# Install the optional Herdr plugin after its keybindings are stowed.
+install_herdr_nvim_plugin() {
+    print_header "Installing herdr-nvim..."
+
+    if ! command_exists herdr; then
+        print_warning "Herdr is not installed; install it and rerun ./setup.sh to add herdr-nvim"
+        return
+    fi
+
+    if ! command_exists python3; then
+        print_error "python3 is required to check installed Herdr plugins"
+        return 1
+    fi
+
+    local installed state
+    if ! installed=$(herdr plugin list --plugin chmarax.herdr-nvim --json); then
+        print_error "Could not list Herdr plugins; herdr-nvim was not installed"
+        return 1
+    fi
+    if ! state=$(python3 -c '
+import json
+import sys
+
+plugins = json.load(sys.stdin)["result"]["plugins"]
+if not plugins:
+    print("missing")
+elif (
+    len(plugins) == 1
+    and plugins[0]["plugin_id"] == "chmarax.herdr-nvim"
+    and isinstance(plugins[0]["enabled"], bool)
+):
+    print("enabled" if plugins[0]["enabled"] else "disabled")
+else:
+    raise ValueError("Unexpected Herdr plugin list response")
+' <<< "$installed"); then
+        print_error "Could not read herdr-nvim installation status"
+        return 1
+    fi
+
+    case "$state" in
+        enabled)
+            print_success "herdr-nvim already installed"
+            ;;
+        disabled)
+            print_warning "herdr-nvim is disabled; run 'herdr plugin enable chmarax.herdr-nvim' to use its shortcuts"
+            ;;
+        missing)
+            if herdr plugin install ChmaraX/herdr-nvim --yes; then
+                print_success "herdr-nvim installed"
+            else
+                print_error "herdr-nvim installation failed; rerun ./setup.sh to retry"
+                return 1
+            fi
+            ;;
+        *)
+            print_error "Unrecognized herdr-nvim installation status: $state"
+            return 1
+            ;;
+    esac
+}
+
 # Stow dotfiles
 stow_dotfiles() {
     print_header "Stowing dotfiles..."
@@ -846,6 +907,7 @@ main() {
     install_tpm
     stow_dotfiles
     install_tmux_plugins
+    install_herdr_nvim_plugin
 
     echo -e "\n${GREEN}╔════════════════════════════════════════╗"
     echo "║         Installation Complete!         ║"

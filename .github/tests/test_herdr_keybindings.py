@@ -43,6 +43,20 @@ class HerdrKeybindingTests(unittest.TestCase):
         self.assertIn("new-copilot", commands["prefix+shift+a"]["command"])
         self.assertFalse(any("first-agent" in command["command"] for command in commands.values()))
 
+    def test_herdr_nvim_actions_preserve_pane_cycling(self):
+        keys = read_config()["keys"]
+        commands = {command["key"]: command for command in keys["command"]}
+        self.assertEqual(len(commands), len(keys["command"]))
+        self.assertEqual(keys["cycle_pane_next"], "prefix+o")
+        self.assertNotIn("prefix+o", commands)
+        for key, action in (
+            ("prefix+e", "chmarax.herdr-nvim.toggle"),
+            ("prefix+shift+o", "chmarax.herdr-nvim.pick-file"),
+        ):
+            with self.subTest(key=key):
+                self.assertEqual(commands[key]["type"], "plugin_action")
+                self.assertEqual(commands[key]["command"], action)
+
 
 @unittest.skipUnless(shutil.which("wezterm"), "WezTerm is required to evaluate its Lua configuration")
 class WezTermHerdrKeyTests(unittest.TestCase):

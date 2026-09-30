@@ -127,7 +127,14 @@ Confirmation prompts inside ccmux and tmux's session picker are unchanged.
 The optional Herdr 0.9+ profile lives in `herdr/.config/herdr/`. It maps the
 custom tmux shortcuts and common tmux defaults to Herdr-native actions without
 changing the tmux or WezTerm configurations. `./setup.sh` stows this package;
-Herdr itself is installed separately.
+Herdr itself is installed separately. If Herdr is available during setup,
+`./setup.sh` also installs [herdr-nvim](https://github.com/ChmaraX/herdr-nvim)
+for its per-tab Neovim sidebar and file picker. Neovim's lazy.nvim installs the
+annotation half; it requires Neovim 0.10+ and Herdr 0.7.5+. If you install Herdr
+later, rerun `./setup.sh` to install the plugin. A disabled installation remains
+disabled; use `herdr plugin enable chmarax.herdr-nvim` to reactivate it. Inside
+Neovim, `<leader>ac` comments code, `<leader>al` lists comments, and `<leader>as`
+sends them to an agent.
 
 Use one Herdr workspace per project, like a tmux session. Herdr tabs correspond
 to tmux windows, and the tab bar sits at the bottom. Separately named Herdr
@@ -154,6 +161,7 @@ Agents header overrides this default.
 | `prefix + Ctrl+1..9` | Focus agent 1-9 in current sidebar order |
 | `prefix + Ctrl+n` / `prefix + Ctrl+p` | Focus the next / previous agent in current sidebar order |
 | `prefix + A` | Open a Copilot tab using the existing `agency copilot --yolo` launcher |
+| `prefix + e` / `prefix + O` | Toggle the Neovim sidebar / pick a file from agent output (herdr-nvim) |
 | `prefix + S` | Toggle expanded / compact sidebar (compact mode shows workspace numbers) |
 | `prefix + r` / `prefix + R` | Reload configuration / enter resize mode |
 | `prefix + o` / `prefix + z` | Cycle panes / toggle zoom |
@@ -161,10 +169,9 @@ Agents header overrides this default.
 | `prefix + Q` / `prefix + g` | Herdr settings / jump to a notification target |
 | `prefix + d` / `prefix + ?` | Detach / show active keybindings |
 
-Herdr's built-in `prefix + [` copy mode remains available. `prefix + O` stays
-unbound. Resize steps and key repetition follow Herdr's behavior rather than
-tmux's five-cell steps and repeat-key window. Use `prefix + R` for Herdr's
-continuous resize mode.
+Herdr's built-in `prefix + [` copy mode remains available. Resize steps and key
+repetition follow Herdr's behavior rather than tmux's five-cell steps and
+repeat-key window. Use `prefix + R` for Herdr's continuous resize mode.
 
 The ccmux review/relay UI, tmux buffer and layout commands, and tmux-resurrect's
 `prefix + Ctrl+s` / `prefix + Ctrl+r` are not ported. Herdr persists its own

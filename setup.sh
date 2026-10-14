@@ -683,9 +683,20 @@ install_tpm() {
 install_tmux_plugins() {
     print_header "Installing tmux plugins..."
 
+    if ! command_exists tmux; then
+        print_warning "tmux is not installed; install it and rerun ./setup.sh to add its plugins"
+        return
+    fi
+
     local installer="$HOME/.tmux/plugins/tpm/bin/install_plugins"
     if [ ! -x "$installer" ]; then
         print_error "TPM plugin installer not found at $installer"
+        return 1
+    fi
+
+    # Stowing the config does not initialize an already-running server.
+    if ! tmux start-server \; set-environment -g TMUX_PLUGIN_MANAGER_PATH "$HOME/.tmux/plugins"; then
+        print_error "Could not initialize tmux plugin path"
         return 1
     fi
 

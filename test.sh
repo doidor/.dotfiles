@@ -65,6 +65,21 @@ else
 fi
 echo
 
+# TPM setup behavior, without network access or touching personal tmux sessions.
+echo -e "${BLUE}→ Checking tmux plugin setup...${NC}"
+if command_exists python3; then
+    if python3 -B -m unittest discover -s .github/tests -p 'test_tmux_setup.py'; then
+        echo -e "${GREEN}✓ tmux plugin setup valid${NC}"
+    else
+        echo -e "${RED}✗ tmux plugin setup has issues${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo -e "${YELLOW}⚠ python3 not installed, skipping tmux plugin setup checks${NC}"
+    WARNINGS=$((WARNINGS + 1))
+fi
+echo
+
 # Test 2: Zsh configuration syntax
 echo -e "${BLUE}→ Checking zsh configuration...${NC}"
 if command_exists zsh; then

@@ -112,6 +112,14 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
 git clone https://github.com/seebi/dircolors-solarized.git zsh-dircolors-solarized
 ```
 
+### Tmux plugin setup
+
+`./setup.sh` initializes TPM's plugin directory synchronously and installs the
+plugins declared in `.tmux.conf`, including from a fresh WSL or non-tmux shell.
+No interactive tmux session is required, and existing panes are not restarted.
+If tmux itself is unavailable, setup warns and skips its plugins; install tmux
+and rerun `./setup.sh`.
+
 ### Tmux closing shortcuts
 
 With the `Ctrl+b` prefix, lowercase `x` closes the current pane, `&` closes the
@@ -288,7 +296,7 @@ The test script validates:
 - TOML configurations (AeroSpace, Herdr)
 - Herdr launcher and tmux importer behavior without starting agents; keybindings and Copilot detection when Herdr is installed
 - Git configuration
-- Tmux configuration
+- Tmux configuration and headless/existing-server TPM setup
 
 Install validation tools for complete testing:
 

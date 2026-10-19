@@ -811,6 +811,21 @@ stow_dotfiles() {
                 ;;
         esac
 
+        local stow_options=()
+        if [ "$folder" = "copilot" ]; then
+            # Keep runtime data out of the repo, including during unstow.
+            stow_options=(--no-folding)
+            while IFS= read -r rel; do
+                local target="$HOME/$rel"
+                if [ -L "$target" ] &&
+                    { [ -d "$folder/$rel" ] || [ ! "$target" -ef "$folder/$rel" ]; }; then
+                    print_error "Refusing to stow copilot through symlink: $target"
+                    print_error "Keep Copilot directories local and resolve this link before retrying"
+                    return 1
+                fi
+            done < <(find "$folder" -mindepth 1 \( -type d -o -type f \) | sed "s|^$folder/||")
+        fi
+
         # stow aborts the entire run on a single conflict, so move any real
         # (non-symlink) file out of the way first. This walks the package tree
         # so nested targets like .config/**/* are covered, not just top-level
@@ -843,10 +858,10 @@ stow_dotfiles() {
         done < <(find "$folder" -type f | sed "s|^$folder/||")
 
         echo "  Stowing $folder..."
-        stow -D -t ~ "$folder" 2>/dev/null || true
+        stow -D "${stow_options[@]}" -t ~ "$folder" 2>/dev/null || true
         # Keep going on failure rather than letting `set -e` kill the whole run
         # part way through, so one bad package cannot leave the rest unstowed.
-        if ! stow -t ~ "$folder"; then
+        if ! stow "${stow_options[@]}" -t ~ "$folder"; then
             print_error "Failed to stow $folder"
             stow_failed=true
             failed_folders+=("$folder")

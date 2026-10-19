@@ -112,6 +112,57 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
 git clone https://github.com/seebi/dircolors-solarized.git zsh-dircolors-solarized
 ```
 
+### Copilot personal customizations
+
+The `copilot/` Stow package manages these personal files across projects:
+
+| Home location | What it contains |
+| --- | --- |
+| `~/.agents/skills/build-crew/SKILL.md` | The manually invoked `/build-crew` workflow |
+| `~/.copilot/copilot-instructions.md` | Plain-language reply preferences |
+| `~/.copilot/agents/paranoid.agent.md` | Independent review of proposed changes |
+| `~/.copilot/agents/surveyor.agent.md` | Independent assessment of an existing repository |
+
+Edit their originals under `copilot/`, using the same paths without the leading
+`~/`. The existing agent definitions are preserved; other personal skills and
+their installers are not changed by this package.
+
+After an agent finalizes a plan, invoke `/build-crew` to assign implementation to
+engineering agents and repeat checks and `paranoid` review until the plan is
+satisfied and relevant findings and concerns are cleared. Every engineering
+assignment requires the smallest useful solution, reuse of existing logic, and
+predictable behavior. Blocked checks, missing tools, and a lack of progress pause
+the workflow instead of reporting success. Commits, pushes, and deployments need
+an explicit request in the selected plan.
+
+The reply preferences normally limit explanatory prose to 500 words, use plain
+language, and add small terminal-friendly diagrams when useful. Longer
+explanations are allowed when genuinely necessary or requested. Code, diagrams,
+saved files, tool output, and internal agent messages are not limited.
+
+`./setup.sh` installs this package automatically. For a fresh or already-linked
+target, you can apply just this package from the repository root:
+
+```bash
+stow --no-folding -t "$HOME" copilot
+```
+
+Always keep `--no-folding`: it links files, not whole directories, so later login
+and session data stays in your home directory instead of entering the repository.
+Setup backs up conflicting regular files to `~/.dotfiles-backup-*` before linking.
+For manual Stow, back up only conflicting mapped files first. Unexpected
+directory links or file links to another source are refused by setup; resolve
+those conflicts deliberately rather than using `--adopt` or replacing a whole
+home directory.
+
+Reload skills with `/skills reload`, then inspect `/skills info build-crew`.
+Start a new Copilot session, or exit and resume an existing one, to load the
+global reply rules and agent profiles; check `/instructions` and `/agent`.
+The shared `.agents/skills` location is supported by Copilot and other compatible
+tools, but this workflow requires Copilot CLI's native agents and `paranoid`.
+These files provide instructions, not a hard word counter or a code-enforced
+review loop.
+
 ### Tmux plugin setup
 
 `./setup.sh` initializes TPM's plugin directory synchronously and installs the
@@ -295,6 +346,7 @@ The test script validates:
 - Lua configurations (Neovim, WezTerm)
 - TOML configurations (AeroSpace, Herdr)
 - Herdr launcher and tmux importer behavior without starting agents; keybindings and Copilot detection when Herdr is installed
+- Copilot package links, conflict backups, repeated setup, and app-data isolation
 - Git configuration
 - Tmux configuration and headless/existing-server TPM setup
 

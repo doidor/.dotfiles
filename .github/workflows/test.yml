@@ -18,7 +18,7 @@ jobs:
       - name: Install validation tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y shellcheck lua5.4 zsh tmux
+          sudo apt-get install -y shellcheck lua5.4 zsh tmux stow
 
           # Install taplo for TOML validation
           curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-linux-x86_64.gz | gunzip -c | sudo tee /usr/local/bin/taplo > /dev/null
@@ -185,6 +185,7 @@ jobs:
         run: |
           echo "Testing stow operations (dry-run)..."
           stow -n -v -t ~ zsh git tmux 2>&1 | tee stow-output.log
+          stow --no-folding -n -v -t ~ copilot 2>&1 | tee -a stow-output.log
 
           # Check for conflicts
           if grep -i "conflict" stow-output.log; then
@@ -198,8 +199,20 @@ jobs:
         run: |
           # Actually create symlinks
           stow -v -t ~ zsh git tmux
+          stow --no-folding -v -t ~ copilot
 
           # Verify symlinks were created
           [ -L ~/.zshrc ] && echo "✓ .zshrc symlinked"
           [ -L ~/.gitconfig ] && echo "✓ .gitconfig symlinked"
           [ -L ~/.tmux.conf ] && echo "✓ .tmux.conf symlinked"
+          for path in .agents/skills/build-crew/SKILL.md \
+            .copilot/copilot-instructions.md \
+            .copilot/agents/paranoid.agent.md .copilot/agents/surveyor.agent.md; do
+            [ -L "$HOME/$path" ]
+            echo "✓ $path symlinked"
+          done
+          for path in .agents .agents/skills .agents/skills/build-crew \
+            .copilot .copilot/agents; do
+            [ -d "$HOME/$path" ]
+            [ ! -L "$HOME/$path" ]
+          done

@@ -65,6 +65,21 @@ else
 fi
 echo
 
+# Copilot package behavior, using temporary home directories only.
+echo -e "${BLUE}→ Checking Copilot customizations...${NC}"
+if command_exists python3 && command_exists stow; then
+    if python3 -B -m unittest discover -s .github/tests -p 'test_copilot_customizations.py'; then
+        echo -e "${GREEN}✓ Copilot customizations valid${NC}"
+    else
+        echo -e "${RED}✗ Copilot customizations have issues${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo -e "${YELLOW}⚠ python3 or stow not installed, skipping Copilot customization checks${NC}"
+    WARNINGS=$((WARNINGS + 1))
+fi
+echo
+
 # TPM setup behavior, without network access or touching personal tmux sessions.
 echo -e "${BLUE}→ Checking tmux plugin setup...${NC}"
 if command_exists python3; then

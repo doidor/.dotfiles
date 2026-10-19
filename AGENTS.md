@@ -7,6 +7,7 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 ```
 .dotfiles/
 ├── aerospace/          # AeroSpace tiling window manager config (macOS)
+├── copilot/            # Personal agents, build-crew skill, and reply preferences
 ├── git/                # Git configuration
 ├── herdr/              # Optional Herdr multiplexer config and helpers
 ├── nvim/               # Neovim configuration (Lua-based)
@@ -24,6 +25,8 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 
 - `setup.sh` - Installs all dependencies via Homebrew and stows dotfiles
 - `test.sh` - Validates syntax of all configuration files
+- `copilot/.copilot/` - Global Copilot reply preferences and custom agent profiles
+- `copilot/.agents/skills/build-crew/SKILL.md` - Plan implementation/review skill
 - `zsh/.zshrc` - Main shell configuration with oh-my-zsh
 - `nvim/.config/nvim/init.lua` - Neovim entry point
 - `nvim/.config/nvim/lua/plugins.lua` - Plugin definitions (lazy.nvim)
@@ -36,6 +39,10 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 
 - All configurations are organized by tool in top-level directories
 - Each directory is structured for GNU Stow (files mirror home directory structure)
+- The `copilot` package uses `stow --no-folding` for file-only links. Keep
+  `~/.copilot` and `~/.agents` as real directories; never put login data,
+  sessions, caches, or personal runtime settings in the package. Setup backs
+  up conflicting regular files but refuses unexpected target symlinks.
 - Neovim plugins are in `nvim/.config/nvim/lua/plugins/` as individual Lua files
 - tmux helpers live in `tmux/.config/tmux/scripts/`:
   `prefix + w` opens the fzf window finder, `prefix + Ctrl+O` opens ccmux,
@@ -61,7 +68,8 @@ This repository contains personal dotfiles for macOS and Linux systems. The conf
 
 1. Edit files directly in this repository
 2. Run `./test.sh` to validate syntax before committing
-3. Run `stow <folder>` to apply changes, or `./setup.sh` for full reinstall
+3. Run `stow <folder>` to apply changes (`stow --no-folding copilot` for Copilot),
+   or `./setup.sh` for full reinstall
 
 ## Dependencies
 

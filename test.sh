@@ -95,6 +95,21 @@ else
 fi
 echo
 
+# Copilot skill setup behavior, without network access or changing personal skills.
+echo -e "${BLUE}→ Checking Copilot skill setup...${NC}"
+if command_exists python3; then
+    if python3 -B -m unittest discover -s .github/tests -p 'test_copilot_skills.py'; then
+        echo -e "${GREEN}✓ Copilot skill setup valid${NC}"
+    else
+        echo -e "${RED}✗ Copilot skill setup has issues${NC}"
+        ERRORS=$((ERRORS + 1))
+    fi
+else
+    echo -e "${YELLOW}⚠ python3 not installed, skipping Copilot skill setup checks${NC}"
+    WARNINGS=$((WARNINGS + 1))
+fi
+echo
+
 # Test 2: Zsh configuration syntax
 echo -e "${BLUE}→ Checking zsh configuration...${NC}"
 if command_exists zsh; then

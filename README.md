@@ -67,6 +67,17 @@ installed ccmux release. Existing relay skills are left unchanged. Use the
 picker's `m` menu and **Hand off** action, or ask Copilot to relay an existing
 session's response to another session.
 
+Setup also installs [pstack](https://github.com/cursor/plugins/tree/main/pstack)'s
+`unslop`, `bro`, `show-me-your-work`, `teach`, `why`, and `how` skills globally for
+GitHub Copilot, including their supporting files. Existing skills in
+`~/.agents/skills` or `~/.copilot/skills` are left unchanged. No other pstack
+skills, agents, or model configuration are installed.
+
+Run `/skills reload` in an existing Copilot session, then invoke a skill by name,
+such as `/teach` or `/how`. These are the upstream definitions; `how`, `why`, and
+`show-me-your-work` include Cursor-specific model, tool, or transcript guidance
+that Copilot must interpret using its own available tools and session data.
+
 #### Version Managers (Optional)
 
 - [nvm](https://github.com/nvm-sh/nvm) - Node.js version manager

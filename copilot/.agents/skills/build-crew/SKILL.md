@@ -1,7 +1,6 @@
 ---
 name: build-crew
 description: Implement a finalized plan with Copilot CLI engineering agents and a paranoid review-and-repair loop. Use only when the user explicitly invokes build-crew to execute a plan, not when planning or installing this skill. Requires Copilot CLI's native agent tools and the paranoid agent.
-disable-model-invocation: true
 ---
 
 # Build Crew

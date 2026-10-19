@@ -529,6 +529,39 @@ install_ccmux_relay_skill() {
     fi
 }
 
+# Install selected pstack skills for GitHub Copilot
+install_pstack_skills() {
+    print_header "Installing pstack skills..."
+
+    local skill
+    local missing_skills=()
+    for skill in unslop bro show-me-your-work teach why how; do
+        if [ -f "$HOME/.agents/skills/$skill/SKILL.md" ] ||
+            [ -f "$HOME/.copilot/skills/$skill/SKILL.md" ]; then
+            print_success "$skill skill already present; leaving it unchanged"
+        else
+            missing_skills+=("$skill")
+        fi
+    done
+
+    if [ "${#missing_skills[@]}" -eq 0 ]; then
+        return
+    fi
+
+    if ! command_exists copilot || ! command_exists npx; then
+        print_warning "Copilot CLI and npx are required for pstack skills; rerun ./setup.sh after installing them"
+        return
+    fi
+
+    if npx --yes -- skills add \
+        "https://github.com/cursor/plugins/tree/main/pstack" \
+        --global --agent github-copilot --skill "${missing_skills[@]}" --yes; then
+        print_success "pstack skills installed for GitHub Copilot: ${missing_skills[*]}"
+    else
+        print_warning "pstack skill installation failed; rerun ./setup.sh to retry"
+    fi
+}
+
 # Install macOS-specific tools
 install_macos_tools() {
     if [ "$OS" != "macos" ]; then
@@ -928,6 +961,7 @@ main() {
     install_languages
     install_ai_tools
     install_ccmux_relay_skill
+    install_pstack_skills
     install_macos_tools
     install_startup_apps
     install_tpm

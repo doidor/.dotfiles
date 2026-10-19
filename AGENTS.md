@@ -87,6 +87,8 @@ The setup script automatically installs:
 - Version managers: nvm, pyenv, bun
 - AI tools: opencode, GitHub Copilot CLI (`copilot-cli` cask on macOS, npm elsewhere),
   ccmux and its `relay` skill for Copilot (`prefix + Ctrl+O` opens ccmux)
+- Global Copilot skills from pstack: `unslop`, `bro`, `show-me-your-work`, `teach`,
+  `why`, and `how`; existing skills are preserved
 - Fonts: Hack Nerd Font, ProFont Nerd Font (required by WezTerm and Zed configs)
 - macOS apps: AeroSpace, Rectangle, Alt-Tab
 - macOS startup apps: 1Password, Cotypist, DisplayLink, Logitech G Hub, OpenIn

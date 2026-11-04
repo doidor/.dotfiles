@@ -270,14 +270,16 @@ normal key handling.
 
 `herdr/.config/herdr/agent-detection/copilot.toml` overrides Herdr's Copilot
 screen-detection manifest. It recognizes all four animated "Waiting for
-background agents" markers, preventing false completion notifications between
-spinner frames while preserving the existing working and approval-prompt rules.
+background agents" markers and the current `ctrl+c interrupt` working footer,
+including mode and permission badges such as `Autopilot · Allow All ·`.
+This prevents false idle states while preserving the older working hints and
+approval-prompt rules.
 
 After editing this manifest, run `stow herdr` and
 `herdr server reload-agent-manifests`. This reloads detection without restarting
 agents; the regular config-reload shortcut does not reload these rules.
 Local manifests replace, rather than extend, the downloaded rules. Remove this
-override once upstream includes the fix so future Copilot detection updates can
+override once upstream includes both fixes so future Copilot detection updates can
 apply normally.
 
 ### Copy tmux layouts into Herdr

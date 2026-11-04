@@ -13,6 +13,11 @@ MANIFEST = (
 )
 HERDR = shutil.which("herdr")
 SPINNER_FRAMES = ("\u25cb", "\u25ce", "\u25c9", "\u25cf")
+FOOTER_PREFIXES = (
+    "",
+    "Autopilot \u00b7 Allow All \u00b7 ",
+    "Interactive \u00b7 Allow All \u00b7 ",
+)
 
 
 @unittest.skipUnless(HERDR, "Herdr is required to evaluate detection manifests")
@@ -52,15 +57,16 @@ class HerdrDetectionTests(unittest.TestCase):
         return report
 
     def test_background_wait_stays_working_for_every_spinner_frame(self):
-        for marker in SPINNER_FRAMES:
-            for suffix in ("", " esc stop agents", " \u00b7 15.2 KiB esc stop agents"):
-                with self.subTest(marker=marker, suffix=suffix):
-                    report = self.explain(
-                        "\n > \n\n " + marker + " Waiting for background agents" + suffix + "\n"
-                    )
-                    self.assertEqual(report["state"], "working")
-                    self.assertEqual(report["matched_rule"]["id"], "background_agents_working")
-                    self.assertTrue(report["visible_working"])
+        for prefix in FOOTER_PREFIXES:
+            for marker in SPINNER_FRAMES:
+                for suffix in ("", " esc stop agents", " \u00b7 15.2 KiB esc stop agents"):
+                    with self.subTest(prefix=prefix, marker=marker, suffix=suffix):
+                        report = self.explain(
+                            f"\n > \n\n {prefix}{marker} Waiting for background agents{suffix}\n"
+                        )
+                        self.assertEqual(report["state"], "working")
+                        self.assertEqual(report["matched_rule"]["id"], "background_agents_working")
+                        self.assertTrue(report["visible_working"])
 
     def test_ordinary_working_hints_are_preserved(self):
         for hint in ("esc to cancel", "esc cancel", "esc again to cancel", "esc interrupt"):
@@ -69,10 +75,33 @@ class HerdrDetectionTests(unittest.TestCase):
                 self.assertEqual(report["state"], "working")
                 self.assertEqual(report["matched_rule"]["id"], "working_cancel_hint")
 
+    def test_current_working_footer_for_every_spinner_frame(self):
+        for prefix in FOOTER_PREFIXES:
+            for marker in SPINNER_FRAMES:
+                for activity in ("Working", "Thinking", "Waiting for background shells"):
+                    with self.subTest(prefix=prefix, marker=marker, activity=activity):
+                        report = self.explain(
+                            " ~/.dotfiles\n\n"
+                            f" {prefix}{marker} {activity} \u00b7 2.8 KiB ctrl+c interrupt"
+                            "    GPT-6.1 Sol \u00b7 922K context\n"
+                        )
+                        self.assertEqual(report["state"], "working")
+                        self.assertEqual(report["matched_rule"]["id"], "working_interrupt_footer")
+                        self.assertTrue(report["visible_working"])
+
     def test_approval_prompts_still_override_background_wait(self):
         report = self.explain(
             "Allow this tool?\nEnter to select \u00b7 Esc to cancel\n"
             "\u25cf Waiting for background agents"
+        )
+        self.assertEqual(report["state"], "blocked")
+        self.assertEqual(report["matched_rule"]["id"], "selection_blocker")
+        self.assertTrue(report["visible_blocker"])
+
+    def test_approval_prompts_still_override_current_working_footer(self):
+        report = self.explain(
+            "Allow this tool?\nEnter to select \u00b7 Esc to cancel\n"
+            "Autopilot \u00b7 Allow All \u00b7 \u25cf Working \u00b7 2.8 KiB ctrl+c interrupt"
         )
         self.assertEqual(report["state"], "blocked")
         self.assertEqual(report["matched_rule"]["id"], "selection_blocker")
@@ -84,6 +113,17 @@ class HerdrDetectionTests(unittest.TestCase):
             "I was Waiting for background agents earlier.\n> ",
             "\u25cf Waiting for background agentship",
             "   > \u25cf Waiting for background agents",
+            "The working footer says ctrl+c interrupt.\n> ",
+            "   > \u25cf Working \u00b7 2.8 KiB ctrl+c interrupt\n> ",
+            "   > Autopilot \u00b7 Allow All \u00b7 \u25cf Working \u00b7 ctrl+c interrupt\n> ",
+            "Autopilot \u00b7 Allow All \u00b7 / commands \u00b7 tab next tab",
+            "\u25cf Working \u00b7 ctrl+c interrupting",
+            "Autopilot \u00b7 Allow All \u00b7 \u25cf Working \u00b7 ctrl+c interrupting",
+            "Autopilot \u00b7 Allow All \u00b7 \u25cf Working \u00b7 ctrl+c interrupt\n"
+            + "\n".join(f"Later output {index}" for index in range(6)),
+            "\u25cf Working \u00b7 2.8 KiB ctrl+c interrupt\n" + "\n".join(
+                f"Later output {index}" for index in range(6)
+            ),
             "\u25cf Waiting for background agents\n" + "\n".join(
                 f"Later output {index}" for index in range(6)
             ),

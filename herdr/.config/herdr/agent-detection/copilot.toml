@@ -31,7 +31,7 @@ priority = 110
 region = "bottom_non_empty_lines(6)"
 visible_working = true
 # All four animation frames mean background agents are still running.
-line_regex = ['^\s*(?:(?:Autopilot|Interactive|Allow All)\s+\x{00b7}\s+)*[\x{25cb}\x{25ce}\x{25c9}\x{25cf}]\s+Waiting for background agents(?:\s|\x{00b7}|$)']
+line_regex = ['^\s*(?:(?:Autopilot|Interactive|Plan|Allow All)\s+\x{00b7}\s+)*[\x{25cb}\x{25ce}\x{25c9}\x{25cf}]\s+Waiting for background agents(?:\s|\x{00b7}|$)']
 
 [[rules]]
 id = "working_interrupt_footer"
@@ -39,7 +39,7 @@ state = "working"
 priority = 100
 region = "bottom_non_empty_lines(6)"
 visible_working = true
-line_regex = ['^\s*(?:(?:Autopilot|Interactive|Allow All)\s+\x{00b7}\s+)*[\x{25cb}\x{25ce}\x{25c9}\x{25cf}]\s+.+\bctrl\+c interrupt(?:\s|$)']
+line_regex = ['^\s*(?:(?:Autopilot|Interactive|Plan|Allow All)\s+\x{00b7}\s+)*[\x{25cb}\x{25ce}\x{25c9}\x{25cf}]\s+.+\bctrl\+c interrupt(?:\s|$)']
 
 [[rules]]
 id = "working_cancel_hint"

@@ -17,6 +17,7 @@ FOOTER_PREFIXES = (
     "",
     "Autopilot \u00b7 Allow All \u00b7 ",
     "Interactive \u00b7 Allow All \u00b7 ",
+    "Plan \u00b7 Allow All \u00b7 ",
 )
 
 
@@ -99,13 +100,15 @@ class HerdrDetectionTests(unittest.TestCase):
         self.assertTrue(report["visible_blocker"])
 
     def test_approval_prompts_still_override_current_working_footer(self):
-        report = self.explain(
-            "Allow this tool?\nEnter to select \u00b7 Esc to cancel\n"
-            "Autopilot \u00b7 Allow All \u00b7 \u25cf Working \u00b7 2.8 KiB ctrl+c interrupt"
-        )
-        self.assertEqual(report["state"], "blocked")
-        self.assertEqual(report["matched_rule"]["id"], "selection_blocker")
-        self.assertTrue(report["visible_blocker"])
+        for prefix in FOOTER_PREFIXES:
+            with self.subTest(prefix=prefix):
+                report = self.explain(
+                    "Allow this tool?\nEnter to select \u00b7 Esc to cancel\n"
+                    f"{prefix}\u25cf Working \u00b7 2.8 KiB ctrl+c interrupt"
+                )
+                self.assertEqual(report["state"], "blocked")
+                self.assertEqual(report["matched_rule"]["id"], "selection_blocker")
+                self.assertTrue(report["visible_blocker"])
 
     def test_idle_prompt_and_transcript_mentions_do_not_look_working(self):
         screens = (
@@ -117,6 +120,8 @@ class HerdrDetectionTests(unittest.TestCase):
             "   > \u25cf Working \u00b7 2.8 KiB ctrl+c interrupt\n> ",
             "   > Autopilot \u00b7 Allow All \u00b7 \u25cf Working \u00b7 ctrl+c interrupt\n> ",
             "Autopilot \u00b7 Allow All \u00b7 / commands \u00b7 tab next tab",
+            "Plan \u00b7 Allow All \u00b7 / commands \u00b7 tab next tab",
+            "   > Plan \u00b7 Allow All \u00b7 \u25cf Working \u00b7 ctrl+c interrupt\n> ",
             "\u25cf Working \u00b7 ctrl+c interrupting",
             "Autopilot \u00b7 Allow All \u00b7 \u25cf Working \u00b7 ctrl+c interrupting",
             "Autopilot \u00b7 Allow All \u00b7 \u25cf Working \u00b7 ctrl+c interrupt\n"
